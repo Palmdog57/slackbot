@@ -1,7 +1,7 @@
 const request = require('request');
 const morning_gif = require('./data.json');
 
-/** Return a random cat GIF to the channgel it originated from
+/** Return a random cat GIF to the channel the message originated from
  * @require request
  */
 function lolcats(app){
@@ -12,12 +12,14 @@ function lolcats(app){
         request('http://edgecats.net/random', function (error, response, body) {
             if (response.statusCode != 200) console.error(error);
 
-            var data = {form: {
+            const data = {
+                form: {
                     token: process.env.SLACK_AUTH_TOKEN,
                     channel: req.body.channel_name,
                     text: body
-                }};
-                
+                }
+            };
+
             request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
                 var responseData = response.body;
                 var msg = JSON.parse(responseData);
@@ -35,8 +37,11 @@ function lolcats(app){
     });
 };
 
-/** Returns a pre-defined message && a good morning GIF
- * @require none
+/** Returns a message to the channel && a good morning GIF
+ *  Picks the GIF from a JSON object specifed in ./data.json
+ *  Displays a message sent by the user. If none exist, a JSON array of greetings is called
+ *  If all else fails, the message displayed is 'Good morning'
+ *  @require ./data.json
  */
 function morning(app){
     app.post('/morning', (req, res) => {
@@ -83,6 +88,4 @@ function morning(app){
 module.exports = {
     lolcats,
     morning
- }
-
-//
+}
