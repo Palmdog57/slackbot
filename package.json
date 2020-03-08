@@ -1,0 +1,21 @@
+{
+  "name": "slackbot",
+  "version": "1.0.0",
+  "description": "Automate your cat messages",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Palmdog57/slackbot.git"
+  },
+  "keywords": [],
+  "author": "Thomas Stephen Palmer",
+  "license": "GPL-3",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "dotenv": "^8.2.0",
+    "slackbots": "^1.2.0"
+  }
+}
