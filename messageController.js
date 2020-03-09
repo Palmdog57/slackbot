@@ -24,12 +24,12 @@ function ping(app){
             var msg = JSON.parse(responseData);
             if (msg.ok == true){
                 msg.statusCode = 200;
-                console.log("STATUS: ", msg.statusCode);
-                console.log("MESSAGE: ", msg.message.text);
+                console.log("STATUS:", msg.statusCode);
+                console.log("MESSAGE:", msg.message.text);
             }else{
                 msg.statusCode = 500;
-                console.log("STATUS: ", msg.statusCode);
-                console.log("ERROR: ", msg);
+                console.log("STATUS:", msg.statusCode);
+                console.log("ERROR:", msg);
             }
         }); //End request to slack API
     }); //End app.post
@@ -45,6 +45,7 @@ function joke(app){
         console.log("\nCOMMAND: /joke");
 
         // Query a jokes API and extract the joke contained within ten million objects
+        // Joke API limits to 10 requests p/hour. If limit is hit - reply with an error.
         request('https://api.jokes.one/jod', function (error, response, body) {
             if (response.statusCode != 200){
                 console.error("JOKE RECEIPT:", response.statusCode);
@@ -92,4 +93,4 @@ function joke(app){
 module.exports = {
     ping,
     joke
- }
+}
