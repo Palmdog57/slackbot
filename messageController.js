@@ -37,8 +37,7 @@ function joke(app){
             headers: {'Accept': 'application/json'}
         };
 
-        // Query a jokes API and extract the joke contained within ten million objects
-        // Joke API limits to 10 requests p/hour. If limit is hit - reply with an error.
+        // Query a jokes API and sends response in slack message
         request.get(options, function (error, response, body) {
             const info = JSON.parse(body);
             if (response.statusCode != 200){
