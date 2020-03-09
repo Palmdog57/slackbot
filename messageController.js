@@ -1,5 +1,6 @@
 // Initialise the required packages & debug mode
 const request = require('request');
+const chalk = require('chalk');
 const debug = true;
 
 /** When the server receives a ping, it replies with "pong"
@@ -32,7 +33,7 @@ function joke(app){
         console.log("\nCOMMAND: /joke");
 
         const options = {
-            url: 'https://icanhazdadjoke.com/xyz',
+            url: 'https://icanhazdadjoke.com/',
             headers: {'Accept': 'application/json'}
         };
 
@@ -41,8 +42,8 @@ function joke(app){
         request.get(options, function (error, response, body) {
             const info = JSON.parse(body);
             if (response.statusCode != 200){
-                console.error("JOKE RECEIPT:", response.statusCode);
-                console.error("JOKE RECEIPT:", info.message);
+                console.error("JOKE RECEIPT:", chalk.red(response.statusCode));
+                console.error("JOKE RECEIPT:", chalk.red(info.message));
 
                 var data = {form: {
                     token: process.env.SLACK_AUTH_TOKEN,
@@ -51,9 +52,9 @@ function joke(app){
                 }};
 
             }else {
-                console.log("JOKE RECEIPT:", response.statusCode);
+                console.log("JOKE RECEIPT:", chalk.green(response.statusCode));
                 const jod = info.joke;
-                
+
                 var data = {form: {
                     token: process.env.SLACK_AUTH_TOKEN,
                     channel: req.body.channel_name,
@@ -78,12 +79,12 @@ function sendSlackMessage(data) {
         var msg = JSON.parse(responseData);
         if (msg.ok == true){
             msg.statusCode = 200;
-            console.log("SLACK RECEIPT:", msg.statusCode);
+            console.log("SLACK RECEIPT:", chalk.green(msg.statusCode));
             console.log("MESSAGE SENT:", msg.message.text);
         } else{
             msg.statusCode = 500;
-            console.log("SLACK RECEIPT:", msg.statusCode);
-            console.log("ERROR:", msg);
+            console.log("SLACK RECEIPT:", chalk.red(msg.statusCode));
+            console.log("ERROR:", chalk.red(msg.error));
         }
     }); //End request to slack API
 };
