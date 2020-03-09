@@ -61,6 +61,44 @@ function joke(app){
     }); //End app.post
 }; //Close function
 
+/** Ping a jokes API & return the value to the user 
+ *  Joke API is throttled to 10 requests an hour
+ *  @require none
+*/
+function quote(app){
+    app.post('/quote', (req, res) => {
+        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
+        console.log("\nCOMMAND: /joke");
+
+        const options = {
+            url: 'https://quotes.rest/qod?language=en/',
+            headers: {'Accept': 'application/json'}
+        };
+
+        // Query a jokes API and sends response in slack message
+        request.get(options, function (error, response, body) {
+            const info = JSON.parse(body);
+            if (response.statusCode != 200){
+                console.error("QUOTE RECEIPT:", chalk.red(response.statusCode));
+                console.error("QUOTE RECEIPT:", chalk.red(info.message));
+
+                var msgToSend = "Error contacting the quote API :crying_cat_face:";
+            }else {
+                console.log("QUOTE RECEIPT:", chalk.green(response.statusCode));
+                var msgToSend = `${info.joke} :joy_cat:`;
+            }
+
+            var data = {form: {
+                token: process.env.SLACK_AUTH_TOKEN,
+                channel: req.body.channel_name,
+                text: `${msgToSend}`
+            }};
+
+            sendSlackMessage(data);
+        }); //End request to joke API
+    }); //End app.post
+}; //Close function
+
 module.exports = {
     ping,
     joke
