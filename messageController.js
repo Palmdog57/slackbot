@@ -23,9 +23,9 @@ function ping(app){
     }); //End app.post
 }; //Close function
 
-/** Ping a jokes API & return the value to the user 
- *  Joke API is throttled to 10 requests an hour
- *  @require none
+/** Ping a jokes API & return the joke to the user 
+ *  @require request
+ *  @URL https://icanhazdadjoke.com/
 */
 function joke(app){
     app.post('/joke', (req, res) => {
@@ -61,9 +61,10 @@ function joke(app){
     }); //End app.post
 }; //Close function
 
-/** Ping a jokes API & return the value to the user 
- *  Joke API is throttled to 10 requests an hour
- *  @require none
+/** Ping a "quote of the day" API & return the quote & author to the user 
+ *  API is throttled to 10 requests an hour
+ *  @require request
+ *  @URL https://quotes.rest/
 */
 function quote(app){
     app.post('/quote', (req, res) => {
@@ -99,9 +100,10 @@ function quote(app){
     }); //End app.post
 }; //Close function
 
-/** Ping a jokes API & return the value to the user 
- *  Joke API is throttled to 10 requests an hour
- *  @require none
+/** Ping a "Simpsons Quotes" API & return the quote & author to the user 
+ *  API does not return true response; hence the body include
+ *  @require request
+ *  @URL https://thesimpsonsquoteapi.glitch.me/quotes
 */
 function simpsons(app){
     app.post('/simpsons', (req, res) => {
