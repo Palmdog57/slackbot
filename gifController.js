@@ -16,6 +16,8 @@ function lolcats(app, cb){
 
         // Query the cat API and set the body of the response as our slack message
         request('http://edgecats.net/random', function (error, response, body) {
+            // @IMPORTANT - If the "random" part of the URL is not specified, a GIF stream will be returned
+            // Unless you wanna crash the script and dump out some _pure garbage_ to slack, leave this here!!!
             if( response.headers['content-length'] > 200){
                 console.error(chalk.red("413 - Payload Too Large"));
                 console.error(chalk.red("Going for shutdown"));
