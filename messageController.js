@@ -99,10 +99,49 @@ function quote(app){
     }); //End app.post
 }; //Close function
 
+/** Ping a jokes API & return the value to the user 
+ *  Joke API is throttled to 10 requests an hour
+ *  @require none
+*/
+function simpsons(app){
+    app.post('/simpsons', (req, res) => {
+        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
+        console.log("\nCOMMAND: /simpsons");
+
+        const options = {
+            url: 'https://thesimpsonsquoteapi.glitch.me/quotes',
+            headers: {'Accept': 'application/json'}
+        };
+
+        // Query a jokes API and sends response in slack message
+        request.get(options, function (error, response, body) {
+            const info = JSON.parse(body);
+            if (body.includes("D'oh!")) {
+                console.error("SIMPSONS RECEIPT:", chalk.red(500));
+                console.error("SIMPSONS RECEIPT:", chalk.red("Internal Server Error"));
+
+                var msgToSend = "Error contacting The Simpsons quote API :crying_cat_face:";
+            }else {
+                console.log("SIMPSONS RECEIPT:", chalk.green(response.statusCode));
+                var msgToSend = `*"${info[0].quote}"*\n-${info[0].character}`;
+            }
+
+            var data = {form: {
+                token: process.env.SLACK_AUTH_TOKEN,
+                channel: req.body.channel_name,
+                text: `${msgToSend}`
+            }};
+
+            sendSlackMessage(data);
+        }); //End request to joke API
+    }); //End app.post
+}; //Close function
+
 module.exports = {
     ping,
     joke,
-    quote
+    quote,
+    simpsons
 }
 
 

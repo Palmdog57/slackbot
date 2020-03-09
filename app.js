@@ -36,6 +36,7 @@ var messages = require("./messageController.js");
 messages.ping(app);
 messages.joke(app);
 messages.quote(app);
+messages.simpsons(app);
 
 /* ------------------------------- GIF Engine ------------------------------- */
 var tenor = require("./gifController.js")
