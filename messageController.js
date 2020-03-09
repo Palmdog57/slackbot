@@ -68,10 +68,10 @@ function joke(app){
 function quote(app){
     app.post('/quote', (req, res) => {
         res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
-        console.log("\nCOMMAND: /joke");
+        console.log("\nCOMMAND: /quote");
 
         const options = {
-            url: 'https://quotes.rest/qod?language=en/',
+            url: 'https://quotes.rest/qod?language=en',
             headers: {'Accept': 'application/json'}
         };
 
@@ -80,12 +80,12 @@ function quote(app){
             const info = JSON.parse(body);
             if (response.statusCode != 200){
                 console.error("QUOTE RECEIPT:", chalk.red(response.statusCode));
-                console.error("QUOTE RECEIPT:", chalk.red(info.message));
+                console.error("QUOTE RECEIPT:", chalk.red(info.error.message));
 
                 var msgToSend = "Error contacting the quote API :crying_cat_face:";
             }else {
                 console.log("QUOTE RECEIPT:", chalk.green(response.statusCode));
-                var msgToSend = `${info.joke} :joy_cat:`;
+                var msgToSend = `*"${info.contents.quotes[0].quote}"*\n-${info.contents.quotes[0].author}`;
             }
 
             var data = {form: {
@@ -101,7 +101,8 @@ function quote(app){
 
 module.exports = {
     ping,
-    joke
+    joke,
+    quote
 }
 
 

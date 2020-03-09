@@ -35,6 +35,7 @@ app.listen(process.env.PORT || PORT, function() {
 var messages = require("./messageController.js");
 messages.ping(app);
 messages.joke(app);
+messages.quote(app);
 
 /* ------------------------------- GIF Engine ------------------------------- */
 var tenor = require("./gifController.js")
