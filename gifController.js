@@ -1,8 +1,11 @@
+// Initialise the required packages 
+// Include gif && greeting data
 const request = require('request');
 const morning_gif = require('./data.json');
 
 /** Return a random cat GIF to the channel the message originated from
- * @require request
+ *  @todo Cleanup 200 OK request on line 12 
+ *  @require request
  */
 function lolcats(app){
     app.post('/cat', (req, res) => {
