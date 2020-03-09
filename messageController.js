@@ -44,22 +44,17 @@ function joke(app){
                 console.error("JOKE RECEIPT:", chalk.red(response.statusCode));
                 console.error("JOKE RECEIPT:", chalk.red(info.message));
 
-                var data = {form: {
-                    token: process.env.SLACK_AUTH_TOKEN,
-                    channel: req.body.channel_name,
-                    text: "Error contacting the joke API :crying_cat_face:"
-                }};
-
+                var msgToSend = "Error contacting the joke API :crying_cat_face:";
             }else {
                 console.log("JOKE RECEIPT:", chalk.green(response.statusCode));
-                const jod = info.joke;
-
-                var data = {form: {
-                    token: process.env.SLACK_AUTH_TOKEN,
-                    channel: req.body.channel_name,
-                    text: `${jod} :joy_cat:`
-                }};
+                var msgToSend = `${info.joke} :joy_cat:`;
             }
+
+            var data = {form: {
+                token: process.env.SLACK_AUTH_TOKEN,
+                channel: req.body.channel_name,
+                text: `${msgToSend}`
+            }};
 
             sendSlackMessage(data);
         }); //End request to joke API

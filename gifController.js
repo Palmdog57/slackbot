@@ -2,6 +2,7 @@
 // Include gif && greeting data
 const request = require('request');
 const morning_gif = require('./data.json');
+const chalk = require('chalk');
 const debug = true;
 
 /** Return a random cat GIF to the channel the message originated from
@@ -26,20 +27,8 @@ function lolcats(app){
                 }
             };
 
-            // Query the slack web API using the above form data
-            request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
-                var responseData = response.body;
-                var msg = JSON.parse(responseData);
-                if (msg.ok == true){
-                    msg.statusCode = 200;
-                    console.log("STATUS: ", msg.statusCode);
-                    console.log("MESSAGE: ", msg.message.text);
-                }else{
-                    msg.statusCode = 500;
-                    console.error("STATUS: ", msg.statusCode);
-                    console.error("ERROR: ", msg);
-                }
-            }); //End request to slack API
+            sendSlackMessage(data);
+
         }); //End request to edgecats
     }); //End app.post
 }; //Close function
@@ -76,20 +65,9 @@ function morning(app){
                 channel: req.body.channel_name,
                 text: `*${greeting}*\n${morning_gif.gifs[number]}`
             }};
-            
-        request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
-            var responseData = response.body;
-            var msg = JSON.parse(responseData);
-            if (msg.ok == true){
-                msg.statusCode = 200;
-                console.log("STATUS: ", msg.statusCode);
-                console.log("MESSAGE: ", msg.message.text);
-            }else{
-                msg.statusCode = 500;
-                console.error("STATUS: ", msg.statusCode);
-                console.error("ERROR: ", msg);
-            }
-        }); // End request to slack API
+
+        sendSlackMessage(data);
+
     }); // End app.post
 }; // Close function
 
@@ -97,3 +75,19 @@ module.exports = {
     lolcats,
     morning
 }
+
+function sendSlackMessage(data) {
+    request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
+        var responseData = response.body;
+        var msg = JSON.parse(responseData);
+        if (msg.ok == true){
+            msg.statusCode = 200;
+            console.log("SLACK RECEIPT:", chalk.green(msg.statusCode));
+            console.log("MESSAGE SENT:", msg.message.text);
+        } else{
+            msg.statusCode = 500;
+            console.log("SLACK RECEIPT:", chalk.red(msg.statusCode));
+            console.log("ERROR:", chalk.red(msg.error));
+        }
+    }); //End request to slack API
+};
