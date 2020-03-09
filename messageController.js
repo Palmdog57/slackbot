@@ -46,32 +46,43 @@ function joke(app){
 
         // Query a jokes API and extract the joke contained within ten million objects
         request('https://api.jokes.one/jod', function (error, response, body) {
-            var msg = JSON.parse(response.body);
-            var joke = msg.contents.jokes;
-            var jod = joke[0].joke.text;
+            if (response.statusCode != 200){
+                console.error("JOKE RECEIPT:", response.statusCode);
+                var catError = JSON.parse(response.body);
+                var errorFromCat = catError.error.message;
+                console.log("ERROR:", errorFromCat);
 
-            if(debug == true){
-                console.log("DEBUG - message response: ", msg);
-                console.log("DEBUG - joke body response: ", joke);
-                console.log("DEBUG - joke of the day response: ", jod);
-            }
-
-            var data = {form: {
+                var data = {form: {
                     token: process.env.SLACK_AUTH_TOKEN,
                     channel: req.body.channel_name,
-                    text: jod
+                    text: "Error contacting the joke API :crying_cat_face:"
                 }};
+
+            }else {
+                var msg = JSON.parse(response.body);
+                var joke = msg.contents.jokes;
+                var jod = joke[0].joke.text;
+
+                console.log("JOKE RECEIPT:", response.statusCode);
+
+                var data = {form: {
+                    token: process.env.SLACK_AUTH_TOKEN,
+                    channel: req.body.channel_name,
+                    text: `${jod} :joy_cat:`
+                }};
+            }
+
             request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
                 var responseData = response.body;
                 var msg = JSON.parse(responseData);
                 if (msg.ok == true){
                     msg.statusCode = 200;
-                    console.log("STATUS: ", msg.statusCode);
-                    console.log("MESSAGE: ", msg.message.text);
+                    console.log("SLACK RECEIPT:", msg.statusCode);
+                    console.log("MESSAGE SENT:", msg.message.text);
                 }else{
                     msg.statusCode = 500;
-                    console.log("STATUS: ", msg.statusCode);
-                    console.log("ERROR: ", msg);
+                    console.log("SLACK RECEIPT:", msg.statusCode);
+                    console.log("ERROR:", msg);
                 }
             }); //End request to slack API
         }); //End request to joke API
