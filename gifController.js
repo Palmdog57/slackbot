@@ -2,6 +2,7 @@
 // Include gif && greeting data
 const request = require('request');
 const morning_gif = require('./data.json');
+const debug = true;
 
 /** Return a random cat GIF to the channel the message originated from
  *  @todo Cleanup 200 OK request on line 12 
@@ -9,12 +10,14 @@ const morning_gif = require('./data.json');
  */
 function lolcats(app){
     app.post('/cat', (req, res) => {
-        res.end();
+        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /cat");
 
+        // Query the cat API and set the body of the response as our slack message
         request('http://edgecats.net/random', function (error, response, body) {
             if (response.statusCode != 200) console.error(error);
 
+            // Construct the data for our slack response
             const data = {
                 form: {
                     token: process.env.SLACK_AUTH_TOKEN,
@@ -23,6 +26,7 @@ function lolcats(app){
                 }
             };
 
+            // Query the slack web API using the above form data
             request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
                 var responseData = response.body;
                 var msg = JSON.parse(responseData);
@@ -35,10 +39,10 @@ function lolcats(app){
                     console.error("STATUS: ", msg.statusCode);
                     console.error("ERROR: ", msg);
                 }
-            });
-        });
-    });
-};
+            }); //End request to slack API
+        }); //End request to edgecats
+    }); //End app.post
+}; //Close function
 
 /** Returns a message to the channel && a good morning GIF
  *  Picks the GIF from a JSON object specifed in ./data.json
@@ -48,13 +52,14 @@ function lolcats(app){
  */
 function morning(app){
     app.post('/morning', (req, res) => {
-        res.end();
-
+        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /morning");
 
+        // Random number to use for selecting gif & greeting
         var number = Math.floor(Math.random() * 26);
-        console.log("NUMBER: ", number);
+        if (debug == true) console.log("NUMBER: ", number);
 
+        // If no text was sent from slack and the random number is higher than 10, set a default message
         if (!req.body.text){
             if (!morning_gif.greetings[number]){
                 var greeting = "Good Morning!";
@@ -84,9 +89,9 @@ function morning(app){
                 console.error("STATUS: ", msg.statusCode);
                 console.error("ERROR: ", msg);
             }
-        });
-    });        
-};
+        }); // End request to slack API
+    }); // End app.post
+}; // Close function
 
 module.exports = {
     lolcats,
