@@ -18,20 +18,7 @@ function ping(app){
                 text: "pong"
             }};
         
-        // Query the slack web API using the above form data
-        request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
-            var responseData = response.body;
-            var msg = JSON.parse(responseData);
-            if (msg.ok == true){
-                msg.statusCode = 200;
-                console.log("STATUS:", msg.statusCode);
-                console.log("MESSAGE:", msg.message.text);
-            }else{
-                msg.statusCode = 500;
-                console.log("STATUS:", msg.statusCode);
-                console.log("ERROR:", msg);
-            }
-        }); //End request to slack API
+        sendSlackMessage(data);
     }); //End app.post
 }; //Close function
 
@@ -44,14 +31,18 @@ function joke(app){
         res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /joke");
 
+        const options = {
+            url: 'https://icanhazdadjoke.com/xyz',
+            headers: {'Accept': 'application/json'}
+        };
+
         // Query a jokes API and extract the joke contained within ten million objects
         // Joke API limits to 10 requests p/hour. If limit is hit - reply with an error.
-        request('https://api.jokes.one/jod', function (error, response, body) {
+        request.get(options, function (error, response, body) {
+            const info = JSON.parse(body);
             if (response.statusCode != 200){
                 console.error("JOKE RECEIPT:", response.statusCode);
-                var catError = JSON.parse(response.body);
-                var errorFromCat = catError.error.message;
-                console.log("ERROR:", errorFromCat);
+                console.error("JOKE RECEIPT:", info.message);
 
                 var data = {form: {
                     token: process.env.SLACK_AUTH_TOKEN,
@@ -60,12 +51,9 @@ function joke(app){
                 }};
 
             }else {
-                var msg = JSON.parse(response.body);
-                var joke = msg.contents.jokes;
-                var jod = joke[0].joke.text;
-
                 console.log("JOKE RECEIPT:", response.statusCode);
-
+                const jod = info.joke;
+                
                 var data = {form: {
                     token: process.env.SLACK_AUTH_TOKEN,
                     channel: req.body.channel_name,
@@ -73,19 +61,7 @@ function joke(app){
                 }};
             }
 
-            request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
-                var responseData = response.body;
-                var msg = JSON.parse(responseData);
-                if (msg.ok == true){
-                    msg.statusCode = 200;
-                    console.log("SLACK RECEIPT:", msg.statusCode);
-                    console.log("MESSAGE SENT:", msg.message.text);
-                }else{
-                    msg.statusCode = 500;
-                    console.log("SLACK RECEIPT:", msg.statusCode);
-                    console.log("ERROR:", msg);
-                }
-            }); //End request to slack API
+            sendSlackMessage(data);
         }); //End request to joke API
     }); //End app.post
 }; //Close function
@@ -94,3 +70,20 @@ module.exports = {
     ping,
     joke
 }
+
+
+function sendSlackMessage(data) {
+    request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
+        var responseData = response.body;
+        var msg = JSON.parse(responseData);
+        if (msg.ok == true){
+            msg.statusCode = 200;
+            console.log("SLACK RECEIPT:", msg.statusCode);
+            console.log("MESSAGE SENT:", msg.message.text);
+        } else{
+            msg.statusCode = 500;
+            console.log("SLACK RECEIPT:", msg.statusCode);
+            console.log("ERROR:", msg);
+        }
+    }); //End request to slack API
+};
