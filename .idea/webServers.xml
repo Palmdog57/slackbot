@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="f8556ead-58e4-46ff-ac8c-681ff46d9a8f" name="IONOS" url="http://77.68.112.239">
+        <fileTransfer host="77.68.112.239" port="22" privateKey="$USER_HOME$/.ssh/laravel.key" rootFolder="/home/tom" accessType="SFTP" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
