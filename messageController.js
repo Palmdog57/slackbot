@@ -3,7 +3,8 @@ const request = require('request');
 const chalk = require('chalk');
 const debug = true;
 
-/** When the server receives a ping, it replies with "pong"
+/** 
+ *  When the server receives a ping, it replies with "pong"
  *  Simple method of ensuring the bot is up & responses are working
  *  @require none
  */
@@ -19,13 +20,14 @@ function ping(app){
     }); //End app.post
 }; //Close function
 
-/** Ping a jokes API & return the joke to the user 
+/** 
+ *  Ping jokes API & send response to user 
  *  @require request
  *  @URL https://icanhazdadjoke.com/
 */
 function joke(app){
     app.post('/joke', (req, res) => {
-        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
+        res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /joke");
         var channel = req.body.channel_name;
 
@@ -34,7 +36,7 @@ function joke(app){
             headers: {'Accept': 'application/json'}
         };
 
-        // Query a jokes API and sends response in slack message
+        // Query API and extract joke from JSON
         request.get(options, function (error, response, body) {
             const info = JSON.parse(body);
             if (response.statusCode !== 200){
@@ -47,25 +49,20 @@ function joke(app){
                 var msgToSend = `${info.joke} :joy_cat:`;
             }
 
-            // var data = {form: {
-            //     token: process.env.SLACK_AUTH_TOKEN,
-            //     channel: req.body.channel_name,
-            //     text: `${msgToSend}`
-            // }};
-
             sendSlackMessage(channel, msgToSend);
         }); //End request to joke API
     }); //End app.post
 }; //Close function
 
-/** Ping a "quote of the day" API & return the quote & author to the user 
+/** 
+ *  Ping "quote of the day" API & send response to user 
  *  API is throttled to 10 requests an hour
  *  @require request
  *  @URL https://quotes.rest/
 */
 function quote(app){
     app.post('/quote', (req, res) => {
-        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
+        res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /quote");
         var channel = req.body.channel_name;
 
@@ -126,14 +123,15 @@ function simpsons(app){
     }); //End app.post
 }; //Close function
 
-/** Ping a "Klingon translation" API & return the quote & author to the user 
+/** 
+ *  Ping a "Klingon translation" API & return the quote & author to the user 
  *  API does not return true response; hence the body include
  *  @require request
  *  @URL https://api.funtranslations.com/translate/klingon.json
 */
 function klingon(app){
     app.post('/klingon', (req, res) => {
-        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
+        res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /klingon");
         var channel = req.body.channel_name;
         var msgToTranslate = req.body.text;
@@ -170,9 +168,10 @@ module.exports = {
 }
 
 
+// Send constructed data to slack
 function sendSlackMessage(channel, msgToSend) {
 
-    // Construct the data for our slack response
+    // Build slack requirements
     var data = {
         form: {
             token: process.env.SLACK_AUTH_TOKEN,
@@ -181,10 +180,9 @@ function sendSlackMessage(channel, msgToSend) {
         }
     };
 
-    // Send the previously constructed data
+    // Send constructed data
     request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
-        var responseData = response.body;
-        var msg = JSON.parse(responseData);
+        var msg = JSON.parse(response.body);
         if (msg.ok === true){
             msg.statusCode = 200;
             console.log("SLACK RECEIPT:", chalk.green(msg.statusCode));
