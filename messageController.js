@@ -12,6 +12,7 @@ function ping(app){
     app.post('/ping', (req, res) => {
         res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /ping");
+        console.log( process.uptime() );
 
         var channel = req.body.channel_name;
         var msgToSend = "pong";
