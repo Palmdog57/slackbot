@@ -4,9 +4,14 @@ const chalk = require('chalk');
 const help_msg = require('./help.json');
 const debug = false;
 
+/** 
+ *  Return a help message for the specified command
+ *  If no command was specified, return help on all commands
+ *  @require help.json
+ */
 function help(app){
     app.post('/help', (req, res) => {
-        res.end(); // Send a 200 okay message to slack to avoid timeout error being displayed to the user
+        res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /help");
         var channel = req.body.channel_name;
 
@@ -14,7 +19,8 @@ function help(app){
         var helpCmd = req.body.text;
         var msgToSend = help_msg[helpCmd];
 
-        if(!msgToSend){
+        // Send list of all commands with markdown
+        if (!msgToSend) {
             var msgToSend = "";
             msgToSend += "*Here are all the commands and what they do: *\n";
             for (const [key, value] of Object.entries(help_msg)) {
@@ -24,16 +30,17 @@ function help(app){
 
         sendSlackMessage(channel, msgToSend);
 
-    }); //End request to edgecats
-}; //End app.post
+    }); //End app.post
+}; //End help function
 
 module.exports = {
     help
 };
 
+// Send constructed data to your slack channel
 function sendSlackMessage(channel, msgToSend) {
 
-    // Construct the data for our slack response
+    // Build slack requirements
     var data = {
         form: {
             token: process.env.SLACK_AUTH_TOKEN,
@@ -41,11 +48,10 @@ function sendSlackMessage(channel, msgToSend) {
             text: msgToSend
         }
     };
-    
-    // Send the previously constructed data
+
+    // Send constructed data
     request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
-        var responseData = response.body;
-        var msg = JSON.parse(responseData);
+        var msg = JSON.parse(response.body);
         if (msg.ok === true){
             msg.statusCode = 200;
             console.log("SLACK RECEIPT:", chalk.green(msg.statusCode));
