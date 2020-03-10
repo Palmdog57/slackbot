@@ -101,7 +101,7 @@ function youtube(app){
         var youtubeKey = process.env.YOUTUBE_KEY;
 
         const options = {
-            url: `https://www.googleapis.com/youtube/v3/search?part=snipet&q=${search}&key=${youtubeKey}`,
+            url: `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${search}&key=${youtubeKey}`,
             headers: {'Accept': 'application/json'}
           };
 
