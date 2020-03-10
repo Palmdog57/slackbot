@@ -8,6 +8,7 @@ function help(app){
     app.post('/help', (req, res) => {
         res.end(); // Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /help");
+        var channel = req.body.channel_name;
 
         // If there are no arguments, return help on all commands
         var helpCmd = req.body.text;
@@ -21,16 +22,7 @@ function help(app){
             }
         }
 
-        // Construct the data for our slack response
-        const data = {
-            form: {
-                token: process.env.SLACK_AUTH_TOKEN,
-                channel: req.body.channel_name,
-                text: msgToSend
-            }
-        };
-
-        sendSlackMessage(data);
+        sendSlackMessage(channel, msgToSend);
 
     }); //End request to edgecats
 }; //End app.post
@@ -39,7 +31,18 @@ module.exports = {
     help
 };
 
-function sendSlackMessage(data) {
+function sendSlackMessage(channel, msgToSend) {
+
+    // Construct the data for our slack response
+    var data = {
+        form: {
+            token: process.env.SLACK_AUTH_TOKEN,
+            channel: channel,
+            text: msgToSend
+        }
+    };
+    
+    // Send the previously constructed data
     request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
         var responseData = response.body;
         var msg = JSON.parse(responseData);
