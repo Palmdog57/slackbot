@@ -23,7 +23,7 @@ function lolcats(app, cb){
                 console.error(chalk.red("Going for shutdown"));
                 process.exit();
             }
-            if (response.statusCode != 200) {
+            if (response.statusCode !== 200) {
                 console.error("CAT RECEIPT:", chalk.red(response.statusCode));
                 console.error(error);
 
@@ -61,7 +61,7 @@ function morning(app){
 
         // Random number to use for selecting gif & greeting
         var number = Math.floor(Math.random() * 26);
-        if (debug == true) console.log("NUMBER: ", number);
+        if (debug === true) console.log("NUMBER: ", number);
 
         // If no text was sent from slack and the random number is higher than 10, set a default message
         if (!req.body.text){
@@ -99,11 +99,11 @@ function youtube(app, cb){
         if (!req.body.text) search = "rick roll";
         var search = encodeURIComponent(req.body.text);
         var youtubeKey = process.env.YOUTUBE_KEY;
-        var url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${search}&key=${youtubeKey}`
+        var url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${search}&key=${youtubeKey}`;
 
         // Query the cat API and set the body of the response as our slack message
         request(url, function (error, response, body) {
-            if (response.statusCode != 200) {
+            if (response.statusCode !== 200) {
                 console.error("CAT RECEIPT:", chalk.red(response.statusCode));
                 console.error(error);
 
@@ -131,13 +131,13 @@ function youtube(app, cb){
 module.exports = {
     lolcats,
     morning
-}
+};
 
 function sendSlackMessage(data) {
     request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
         var responseData = response.body;
         var msg = JSON.parse(responseData);
-        if (msg.ok == true){
+        if (msg.ok === true){
             msg.statusCode = 200;
             console.log("SLACK RECEIPT:", chalk.green(msg.statusCode));
             console.log("MESSAGE SENT:", msg.message.text);
