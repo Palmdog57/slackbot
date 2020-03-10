@@ -37,8 +37,9 @@ messages.ping(app);
 messages.joke(app);
 messages.quote(app);
 messages.simpsons(app);
+messages.klingon(app);
 
-/* ------------------------------- GIF Engine ------------------------------- */
-var tenor = require("./gifController.js")
+/* ------------------------------- Media Engine ------------------------------- */
+var tenor = require("./mediaController.js")
 tenor.lolcats(app);
 tenor.morning(app);

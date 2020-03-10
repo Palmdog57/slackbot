@@ -12,6 +12,8 @@ function ping(app){
         res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /ping");
 
+        console.log("BODY: ", req.body);
+
         // Construct the data for our slack response
         var data = {form: {
                 token: process.env.SLACK_AUTH_TOKEN,
@@ -139,11 +141,51 @@ function simpsons(app){
     }); //End app.post
 }; //Close function
 
+/** Ping a "Klingon translation" API & return the quote & author to the user 
+ *  API does not return true response; hence the body include
+ *  @require request
+ *  @URL https://api.funtranslations.com/translate/klingon.json
+*/
+function klingon(app){
+    app.post('/klingon', (req, res) => {
+        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
+        console.log("\nCOMMAND: /klingon");
+        var msgToTranslate = req.body.text;
+        const options = {
+            url: 'https://api.funtranslations.com/translate/klingon.json?text='+msgToTranslate,
+            headers: {'Accept': 'application/json'}
+        };
+
+        // Query a jokes API and sends response in slack message
+        request.get(options, function (error, response, body) {
+            const info = JSON.parse(body);
+            if (body.statusCode != 200) {
+                console.error("KLINGON RECEIPT:", chalk.red(info.error.code));
+                console.error("KLINGON RECEIPT:", chalk.red(info.error.message));
+
+                var msgToSend = "Error contacting the klingon translations API :crying_cat_face:";
+            }else {
+                console.log("KLINGON RECEIPT:", chalk.green(response.statusCode));
+                var msgToSend = `*"${info.contents.translated}"*\n-Klingon translation of "${info.contents.text}"`;
+            }
+
+            var data = {form: {
+                token: process.env.SLACK_AUTH_TOKEN,
+                channel: req.body.channel_name,
+                text: `${msgToSend}`
+            }};
+
+            sendSlackMessage(data);
+        }); //End request to joke API
+    }); //End app.post
+}; //Close function
+
 module.exports = {
     ping,
     joke,
     quote,
-    simpsons
+    simpsons,
+    klingon
 }
 
 

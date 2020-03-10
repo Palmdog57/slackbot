@@ -86,6 +86,48 @@ function morning(app){
     }); // End app.post
 }; // Close function
 
+/** Connect to YouTube search API and return first result
+ *  @require request
+ *  @require process.env
+ */
+function youtube(app, cb){
+    app.post('/youtube', (req, res) => {
+        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
+        console.log("\nCOMMAND: /youtube");
+        
+        // If no text was sent, make them pay
+        if (!req.body.text) search = "rick roll";
+        var search = encodeURIComponent(req.body.text);
+        var youtubeKey = process.env.YOUTUBE_KEY;
+        var url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${search}&key=${youtubeKey}`
+
+        // Query the cat API and set the body of the response as our slack message
+        request(url, function (error, response, body) {
+            if (response.statusCode != 200) {
+                console.error("CAT RECEIPT:", chalk.red(response.statusCode));
+                console.error(error);
+
+                var msgToSend = "Error occurred while trying to find the cats :crying_cat_face:"
+            }else{
+                console.log("CAT RECEIPT:", chalk.green(response.statusCode));
+                var msgToSend = body
+            }
+
+            // Construct the data for our slack response
+            const data = {
+                form: {
+                    token: process.env.SLACK_AUTH_TOKEN,
+                    channel: req.body.channel_name,
+                    text: msgToSend
+                }
+            };
+
+            sendSlackMessage(data);
+
+        }); //End request to edgecats
+    }); //End app.post
+}; //Close function
+
 module.exports = {
     lolcats,
     morning
