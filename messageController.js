@@ -159,6 +159,7 @@ function klingon(app){
         // Query a jokes API and sends response in slack message
         request.get(options, function (error, response, body) {
             const info = JSON.parse(body);
+            console.log(info);
             if (body.statusCode != 200) {
                 console.error("KLINGON RECEIPT:", chalk.red(info.error.code));
                 console.error("KLINGON RECEIPT:", chalk.red(info.error.message));
