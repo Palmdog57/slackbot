@@ -21,16 +21,17 @@ function lolcats(app){
             if( response.headers['content-length'] > 200){
                 console.error(chalk.red("413 - Payload Too Large"));
                 console.error(chalk.red("Going for shutdown"));
-                process.exit();
-            }
-            if (response.statusCode !== 200) {
-                console.error("CAT RECEIPT:", chalk.red(response.statusCode));
-                console.error(error);
-
                 var msgToSend = "Error occurred while trying to find the cats :crying_cat_face:"
             }else{
-                console.log("CAT RECEIPT:", chalk.green(response.statusCode));
-                var msgToSend = body
+                if (response.statusCode !== 200) {
+                    console.error("CAT RECEIPT:", chalk.red(response.statusCode));
+                    console.error(error);
+
+                    var msgToSend = "Error occurred while trying to find the cats :crying_cat_face:"
+                }else{
+                    console.log("CAT RECEIPT:", chalk.green(response.statusCode));
+                    var msgToSend = body
+                }
             }
 
             // Construct the data for our slack response
@@ -102,7 +103,7 @@ function youtube(app){
         var youtubeKey = process.env.YOUTUBE_KEY;
 
         const options = {
-            url: `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${search}&key=${youtubeKey}`,
+            url: `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${search}&type=video&key=${youtubeKey}`,
             headers: {'Accept': 'application/json'}
           };
 
