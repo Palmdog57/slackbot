@@ -9,7 +9,7 @@ const debug = false;
  *  @todo Cleanup 200 OK request on line 12 
  *  @require request
  */
-function lolcats(app, cb){
+function lolcats(app){
     app.post('/cat', (req, res) => {
         res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /cat");
@@ -23,7 +23,7 @@ function lolcats(app, cb){
                 console.error(chalk.red("Going for shutdown"));
                 process.exit();
             }
-            if (response.statusCode != 200) {
+            if (response.statusCode !== 200) {
                 console.error("CAT RECEIPT:", chalk.red(response.statusCode));
                 console.error(error);
 
@@ -61,7 +61,7 @@ function morning(app){
 
         // Random number to use for selecting gif & greeting
         var number = Math.floor(Math.random() * 26);
-        if (debug == true) console.log("NUMBER: ", number);
+        if (debug === true) console.log("NUMBER: ", number);
 
         // If no text was sent from slack and the random number is higher than 10, set a default message
         if (!req.body.text){
@@ -86,16 +86,65 @@ function morning(app){
     }); // End app.post
 }; // Close function
 
+/** Connect to YouTube search API and return first result
+ *  @require request
+ *  @require process.env
+ */
+function youtube(app){
+    app.post('/youtube', (req, res) => {
+        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
+        console.log("\nCOMMAND: /youtube");
+        
+        // If no text was sent, make them pay
+        if (!req.body.text) search = "rick roll";
+        var search = encodeURIComponent(req.body.text);
+        var youtubeKey = process.env.YOUTUBE_KEY;
+
+        const options = {
+            url: `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${search}&key=${youtubeKey}`,
+            headers: {'Accept': 'application/json'}
+          };
+
+        // Query the cat API and set the body of the response as our slack message
+        request(options, function (error, response, body) {
+            var resp = JSON.parse(body);
+            if (response.statusCode !== 200) {
+                console.error("YOUTUBE RECEIPT:", chalk.red(response.statusCode));
+                console.error(resp.error.message);
+
+                var msgToSend = "A problem occurred contacting YouTube :crying_cat_face:"
+            }else{
+                console.log("YOUTUBE RECEIPT:", chalk.green(response.statusCode));
+                var videoId = resp.items[0].id.videoId;
+                var msgToSend = `https://www.youtube.com/watch?v=${videoId}`;
+            }
+
+            // Construct the data for our slack response
+            const data = {
+                form: {
+                    token: process.env.SLACK_AUTH_TOKEN,
+                    channel: req.body.channel_name,
+                    text: msgToSend
+                }
+            };
+
+            sendSlackMessage(data);
+
+        }); //End request to edgecats
+    }); //End app.post
+}; //Close function
+
 module.exports = {
     lolcats,
-    morning
-}
+    morning,
+    youtube
+};
 
 function sendSlackMessage(data) {
     request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
         var responseData = response.body;
         var msg = JSON.parse(responseData);
-        if (msg.ok == true){
+        if (msg.ok === true){
             msg.statusCode = 200;
             console.log("SLACK RECEIPT:", chalk.green(msg.statusCode));
             console.log("MESSAGE SENT:", msg.message.text);
