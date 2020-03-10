@@ -44,6 +44,7 @@ var media = require("./mediaController.js")
 media.lolcats(app);
 media.morning(app);
 media.youtube(app);
+media.spotify(app);
 
 /* ------------------------------ Admin Engine ------------------------------ */
 var admin = require("./adminController.js")
