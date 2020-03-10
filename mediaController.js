@@ -13,6 +13,7 @@ function lolcats(app){
     app.post('/cat', (req, res) => {
         res.end(); // Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /cat");
+        var channel = req.body.channel_name;
 
         // Query the cat API and set the body of the response as our slack message
         request('http://edgecats.net/random', function (error, response, body) {
@@ -34,16 +35,7 @@ function lolcats(app){
                 }
             }
 
-            // Construct the data for our slack response
-            const data = {
-                form: {
-                    token: process.env.SLACK_AUTH_TOKEN,
-                    channel: req.body.channel_name,
-                    text: msgToSend
-                }
-            };
-
-            sendSlackMessage(data);
+            sendSlackMessage(channel, msgToSend);
 
         }); //End request to edgecats
     }); //End app.post
@@ -59,6 +51,7 @@ function morning(app){
     app.post('/morning', (req, res) => {
         res.end(); // Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /morning");
+        var channel = req.body.channel_name;
 
         // Random number to use for selecting gif & greeting
         var number = Math.floor(Math.random() * 26);
@@ -75,15 +68,9 @@ function morning(app){
             var greeting = req.body.text;
         }
 
-        var data = {
-            form: {
-                token: process.env.SLACK_AUTH_TOKEN,
-                channel: req.body.channel_name,
-                text: `*${greeting}*\n${morning_gif.gifs[number]}`
-            }
-        };
+        var msgToSend = `*${greeting}*\n${morning_gif.gifs[number]}`;
 
-        sendSlackMessage(data);
+        sendSlackMessage(channel, msgToSend);
 
     }); // End app.post
 }; // Close function
@@ -96,6 +83,7 @@ function youtube(app){
     app.post('/youtube', (req, res) => {
         res.end(); // Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /youtube");
+        var channel = req.body.channel_name;
         
         // If no text was sent, make them pay
         if (!req.body.text) search = "rick roll";
@@ -121,16 +109,7 @@ function youtube(app){
                 var msgToSend = `https://www.youtube.com/watch?v=${videoId}`;
             }
 
-            // Construct the data for our slack response
-            const data = {
-                form: {
-                    token: process.env.SLACK_AUTH_TOKEN,
-                    channel: req.body.channel_name,
-                    text: msgToSend
-                }
-            };
-
-            sendSlackMessage(data);
+            sendSlackMessage(channel, msgToSend);
 
         }); //End request to edgecats
     }); //End app.post
@@ -144,6 +123,7 @@ function spotify(app){
     app.post('/spotify', (req, res) => {
         res.end(); // Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /spotify");
+        var channel = req.body.channel_name;
         
         // If no text was sent, make them pay
         if (!req.body.text) search = "rick roll";
@@ -172,16 +152,7 @@ function spotify(app){
                 var msgToSend = tracks.external_urls.spotify;
             }
 
-            // Construct the data for our slack response
-            const data = {
-                form: {
-                    token: process.env.SLACK_AUTH_TOKEN,
-                    channel: req.body.channel_name,
-                    text: msgToSend
-                }
-            };
-
-            sendSlackMessage(data);
+            sendSlackMessage(channel, msgToSend);
 
         }); //End request to edgecats
     }); //End app.post
@@ -195,7 +166,18 @@ module.exports = {
 };
 
 // Send the data via a slack message.
-function sendSlackMessage(data) {
+function sendSlackMessage(channel, msgToSend) {
+
+    // Construct the data for our slack response
+    var data = {
+        form: {
+            token: process.env.SLACK_AUTH_TOKEN,
+            channel: channel,
+            text: msgToSend
+        }
+    };
+
+    // Send the previously constructed data
     request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
         var msg = JSON.parse(response.body);
         if (msg.ok === true){
