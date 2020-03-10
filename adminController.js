@@ -6,9 +6,10 @@ const debug = false;
 
 function help(app){
     app.post('/help', (req, res) => {
-        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
+        res.end(); // Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /help");
 
+        // If there are no arguments, return help on all commands
         var helpCmd = req.body.text;
         var msgToSend = help_msg[helpCmd];
 
@@ -16,7 +17,7 @@ function help(app){
             var msgToSend = "";
             msgToSend += "*Here are all the commands and what they do: *\n";
             for (const [key, value] of Object.entries(help_msg)) {
-                msgToSend += `/${key}: ${value}\n`;
+                msgToSend += `*${key}*- ${value}\n`;
             }
         }
 

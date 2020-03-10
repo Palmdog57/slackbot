@@ -11,7 +11,7 @@ const debug = false;
  */
 function lolcats(app){
     app.post('/cat', (req, res) => {
-        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
+        res.end(); // Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /cat");
 
         // Query the cat API and set the body of the response as our slack message
@@ -56,7 +56,7 @@ function lolcats(app){
  */
 function morning(app){
     app.post('/morning', (req, res) => {
-        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
+        res.end(); // Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /morning");
 
         // Random number to use for selecting gif & greeting
@@ -74,12 +74,13 @@ function morning(app){
             var greeting = req.body.text;
         }
 
-        var data = {form: {
+        var data = {
+            form: {
                 token: process.env.SLACK_AUTH_TOKEN,
-                type: "mrkdwn",
                 channel: req.body.channel_name,
                 text: `*${greeting}*\n${morning_gif.gifs[number]}`
-            }};
+            }
+        };
 
         sendSlackMessage(data);
 
@@ -92,7 +93,7 @@ function morning(app){
  */
 function youtube(app){
     app.post('/youtube', (req, res) => {
-        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
+        res.end(); // Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /youtube");
         
         // If no text was sent, make them pay
@@ -140,10 +141,10 @@ module.exports = {
     youtube
 };
 
+// Send the data via a slack message.
 function sendSlackMessage(data) {
     request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
-        var responseData = response.body;
-        var msg = JSON.parse(responseData);
+        var msg = JSON.parse(response.body);
         if (msg.ok === true){
             msg.statusCode = 200;
             console.log("SLACK RECEIPT:", chalk.green(msg.statusCode));

@@ -12,8 +12,6 @@ function ping(app){
         res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /ping");
 
-        console.log("BODY: ", req.body);
-
         // Construct the data for our slack response
         var data = {form: {
                 token: process.env.SLACK_AUTH_TOKEN,
@@ -130,11 +128,13 @@ function simpsons(app){
                 var msgToSend = `*"${info[0].quote}"*\n-${info[0].character}`;
             }
 
-            var data = {form: {
-                token: process.env.SLACK_AUTH_TOKEN,
-                channel: req.body.channel_name,
-                text: `${msgToSend}`
-            }};
+            var data = {
+                form: {
+                    token: process.env.SLACK_AUTH_TOKEN,
+                    channel: req.body.channel_name,
+                    text: `${msgToSend}`
+                }
+            };
 
             sendSlackMessage(data);
         }); //End request to joke API
@@ -159,7 +159,6 @@ function klingon(app){
         // Query a jokes API and sends response in slack message
         request.get(options, function (error, response, body) {
             const info = JSON.parse(body);
-            console.log(response.statusCode);
             if (response.statusCode !== 200) {
                 console.error("KLINGON RECEIPT:", chalk.red(info.error.code));
                 console.error("KLINGON RECEIPT:", chalk.red(info.error.message));
