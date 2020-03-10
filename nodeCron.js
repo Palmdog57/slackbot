@@ -5,7 +5,7 @@ const chalk = require('chalk');
 
 console.log("===NodeCron.js is Running===");
  
-cron.schedule('* 21 * * *', () => {
+cron.schedule('0 9 * * *', () => {
   console.log("===Time trigger activated.===");
   console.log("\nCOMMAND: /ping");
 
