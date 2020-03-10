@@ -42,7 +42,7 @@ function joke(app){
         // Query a jokes API and sends response in slack message
         request.get(options, function (error, response, body) {
             const info = JSON.parse(body);
-            if (response.statusCode != 200){
+            if (response.statusCode !== 200){
                 console.error("JOKE RECEIPT:", chalk.red(response.statusCode));
                 console.error("JOKE RECEIPT:", chalk.red(info.message));
 
@@ -81,7 +81,7 @@ function quote(app){
         // Query a jokes API and sends response in slack message
         request.get(options, function (error, response, body) {
             const info = JSON.parse(body);
-            if (response.statusCode != 200){
+            if (response.statusCode !== 200){
                 console.error("QUOTE RECEIPT:", chalk.red(response.statusCode));
                 console.error("QUOTE RECEIPT:", chalk.red(info.error.message));
 
@@ -159,8 +159,8 @@ function klingon(app){
         // Query a jokes API and sends response in slack message
         request.get(options, function (error, response, body) {
             const info = JSON.parse(body);
-            console.log(info);
-            if (body.statusCode != 200) {
+            console.log(response.statusCode);
+            if (response.statusCode !== 200) {
                 console.error("KLINGON RECEIPT:", chalk.red(info.error.code));
                 console.error("KLINGON RECEIPT:", chalk.red(info.error.message));
 
@@ -194,7 +194,7 @@ function sendSlackMessage(data) {
     request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
         var responseData = response.body;
         var msg = JSON.parse(responseData);
-        if (msg.ok == true){
+        if (msg.ok === true){
             msg.statusCode = 200;
             console.log("SLACK RECEIPT:", chalk.green(msg.statusCode));
             console.log("MESSAGE SENT:", msg.message.text);

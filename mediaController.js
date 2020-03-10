@@ -9,7 +9,7 @@ const debug = false;
  *  @todo Cleanup 200 OK request on line 12 
  *  @require request
  */
-function lolcats(app, cb){
+function lolcats(app){
     app.post('/cat', (req, res) => {
         res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /cat");
@@ -90,7 +90,7 @@ function morning(app){
  *  @require request
  *  @require process.env
  */
-function youtube(app, cb){
+function youtube(app){
     app.post('/youtube', (req, res) => {
         res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /youtube");
@@ -99,18 +99,24 @@ function youtube(app, cb){
         if (!req.body.text) search = "rick roll";
         var search = encodeURIComponent(req.body.text);
         var youtubeKey = process.env.YOUTUBE_KEY;
-        var url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${search}&key=${youtubeKey}`;
+
+        const options = {
+            url: `https://www.googleapis.com/youtube/v3/search?part=snipet&q=${search}&key=${youtubeKey}`,
+            headers: {'Accept': 'application/json'}
+          };
 
         // Query the cat API and set the body of the response as our slack message
-        request(url, function (error, response, body) {
+        request(options, function (error, response, body) {
+            var resp = JSON.parse(body);
             if (response.statusCode !== 200) {
-                console.error("CAT RECEIPT:", chalk.red(response.statusCode));
-                console.error(error);
+                console.error("YOUTUBE RECEIPT:", chalk.red(response.statusCode));
+                console.error(resp.error.message);
 
-                var msgToSend = "Error occurred while trying to find the cats :crying_cat_face:"
+                var msgToSend = "A problem occurred contacting YouTube :crying_cat_face:"
             }else{
-                console.log("CAT RECEIPT:", chalk.green(response.statusCode));
-                var msgToSend = body
+                console.log("YOUTUBE RECEIPT:", chalk.green(response.statusCode));
+                var videoId = resp.items[0].id.videoId;
+                var msgToSend = `https://www.youtube.com/watch?v=${videoId}`;
             }
 
             // Construct the data for our slack response
@@ -130,7 +136,8 @@ function youtube(app, cb){
 
 module.exports = {
     lolcats,
-    morning
+    morning,
+    youtube
 };
 
 function sendSlackMessage(data) {

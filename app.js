@@ -40,6 +40,7 @@ messages.simpsons(app);
 messages.klingon(app);
 
 /* ------------------------------- Media Engine ------------------------------- */
-var tenor = require("./mediaController.js")
-tenor.lolcats(app);
-tenor.morning(app);
+var media = require("./mediaController.js")
+media.lolcats(app);
+media.morning(app);
+media.youtube(app);
