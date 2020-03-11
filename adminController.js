@@ -33,11 +33,33 @@ function help(app){
     }); //End app.post
 }; //End help function
 
+/** 
+ *  When the server receives a ping, it replies with "pong"
+ *  Simple method of ensuring the bot is up & responses are working
+ *  @require none
+ */
+function uptime(app){
+    app.post('/uptime', (req, res) => {
+        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
+        console.log("\nCOMMAND: /uptime");
+        
+        var sec = process.uptime();
+        const yourTime = convertHMS(sec); // 4600 seconds
+        //console.log(yourTime);
+
+        var channel = req.body.channel_name;
+        var msgToSend = `Mittens has been up for ${yourTime}`;
+        
+        sendSlackMessage(channel, msgToSend);
+    }); //End app.post
+}; //Close function
+
 module.exports = {
-    help
+    help,
+    uptime
 };
 
-// Send constructed data to your slack channel
+// Send constructed data to slack
 function sendSlackMessage(channel, msgToSend) {
 
     // Build slack requirements
@@ -63,3 +85,16 @@ function sendSlackMessage(channel, msgToSend) {
         }
     }); //End request to slack API
 };
+
+
+function convertHMS(value) {
+    const sec = parseInt(value, 10); // convert value to number if it's string
+    let hours   = Math.floor(sec / 3600); // get hours
+    let minutes = Math.floor((sec - (hours * 3600)) / 60); // get minutes
+    let seconds = sec - (hours * 3600) - (minutes * 60); //  get seconds
+    // add 0 if value < 10
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    return hours+' hours '+minutes+' minutes '+seconds+' seconds '; // Return is HH : MM : SS
+}

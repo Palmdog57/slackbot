@@ -12,7 +12,6 @@ function ping(app){
     app.post('/ping', (req, res) => {
         res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /ping");
-        console.log( process.uptime() );
 
         var channel = req.body.channel_name;
         var msgToSend = "pong";
@@ -195,3 +194,16 @@ function sendSlackMessage(channel, msgToSend) {
         }
     }); //End request to slack API
 };
+
+
+function convertHMS(value) {
+    const sec = parseInt(value, 10); // convert value to number if it's string
+    let hours   = Math.floor(sec / 3600); // get hours
+    let minutes = Math.floor((sec - (hours * 3600)) / 60); // get minutes
+    let seconds = sec - (hours * 3600) - (minutes * 60); //  get seconds
+    // add 0 if value < 10
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    return hours+':'+minutes+':'+seconds; // Return is HH : MM : SS
+}
