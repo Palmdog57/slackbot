@@ -86,7 +86,7 @@ function sendSlackMessage(channel, msgToSend) {
     }); //End request to slack API
 };
 
-
+/** Convert seconds to ISO format */
 function convertHMS(value) {
     const sec = parseInt(value, 10); // convert value to number if it's string
     let hours   = Math.floor(sec / 3600); // get hours
