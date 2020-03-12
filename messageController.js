@@ -38,14 +38,11 @@ function joke(app){
 
         await RequestGet(options).then(response => {
             const info = JSON.parse(response);
-            console.log(info);
             let msgToSend = `${info.joke} :joy_cat:`;
-            console.log("Message to send 1: ", msgToSend);
 
             if (info.status !== 200){
-                console.error("JOKE STATUS:", chalk.red(response.statusCode));
+                console.error("JOKE STATUS:", chalk.red(info.status));
                 console.error("JOKE STATUS:", chalk.red(info.message));
-
                 msgToSend = "Error contacting the joke API :crying_cat_face:";
             }else {
                 console.log("JOKE RECEIPT:", chalk.green(info.status));
@@ -203,8 +200,9 @@ const RequestGet = async function(options) {
         if(debug === true) console.log(chalk.blue("GET returning: ", x));
         return x 
     }).catch(error => {
-        console.error(chalk.red("GET REQUEST failed"));
-        console.error(error);
+        //console.log();
+        return error.error;
+        //return err
     })
 }
 
