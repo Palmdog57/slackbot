@@ -1,5 +1,5 @@
 // Initialise the required packages & debug mode
-const request = require('request');
+const request = require("request-promise-native");
 const chalk = require('chalk');
 const debug = true;
 
@@ -26,7 +26,7 @@ function ping(app){
  *  @URL https://icanhazdadjoke.com/
 */
 function joke(app){
-    app.post('/joke', (req, res) => {
+    app.post('/joke', async (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /joke");
         var channel = req.body.channel_name;
@@ -36,21 +36,23 @@ function joke(app){
             headers: {'Accept': 'application/json'}
         };
 
-        // Query API and extract joke from JSON
-        request.get(options, function (error, response, body) {
-            const info = JSON.parse(body);
-            if (response.statusCode !== 200){
-                console.error("JOKE RECEIPT:", chalk.red(response.statusCode));
-                console.error("JOKE RECEIPT:", chalk.red(info.message));
+        await RequestGet(options).then(response => {
+            const info = JSON.parse(response);
+            console.log(info);
+            let msgToSend = `${info.joke} :joy_cat:`;
+            console.log("Message to send 1: ", msgToSend);
 
-                var msgToSend = "Error contacting the joke API :crying_cat_face:";
+            if (info.status !== 200){
+                console.error("JOKE STATUS:", chalk.red(response.statusCode));
+                console.error("JOKE STATUS:", chalk.red(info.message));
+
+                msgToSend = "Error contacting the joke API :crying_cat_face:";
             }else {
-                console.log("JOKE RECEIPT:", chalk.green(response.statusCode));
-                var msgToSend = `${info.joke} :joy_cat:`;
+                console.log("JOKE RECEIPT:", chalk.green(info.status));
             }
 
             sendSlackMessage(channel, msgToSend);
-        }); //End request to joke API
+        });
     }); //End app.post
 }; //Close function
 
@@ -195,15 +197,15 @@ function sendSlackMessage(channel, msgToSend) {
     }); //End request to slack API
 };
 
-
-function convertHMS(value) {
-    const sec = parseInt(value, 10); // convert value to number if it's string
-    let hours   = Math.floor(sec / 3600); // get hours
-    let minutes = Math.floor((sec - (hours * 3600)) / 60); // get minutes
-    let seconds = sec - (hours * 3600) - (minutes * 60); //  get seconds
-    // add 0 if value < 10
-    if (hours   < 10) {hours   = "0"+hours;}
-    if (minutes < 10) {minutes = "0"+minutes;}
-    if (seconds < 10) {seconds = "0"+seconds;}
-    return hours+':'+minutes+':'+seconds; // Return is HH : MM : SS
+const RequestGet = async function(options) {
+    if(debug === true) console.log(chalk.blue("Launched GET request..."));
+    return request(options).then(x => {
+        if(debug === true) console.log(chalk.blue("GET returning: ", x));
+        return x 
+    }).catch(error => {
+        console.error(chalk.red("GET REQUEST failed"));
+        console.error(error);
+    })
 }
+
+
