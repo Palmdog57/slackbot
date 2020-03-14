@@ -13,8 +13,8 @@ function ping(app){
         res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /ping");
 
-        var channel = req.body.channel_name;
-        var msgToSend = "pong";
+        const channel = req.body.channel_name;
+        const msgToSend = "pong";
         
         sendSlackMessage(channel, msgToSend);
     }); //End app.post
@@ -39,7 +39,7 @@ function joke(app){
 
         await RequestGet(options).then(response => {
             const info = JSON.parse(response);
-            console.log("plzWork", info);
+            if(debug === true) console.log("RequestGet function returned: ", info);
             let msgToSend = `${info.joke} :joy_cat:`;
 
             if (info.status !== 200){
@@ -78,12 +78,7 @@ function quote(app){
         await RequestGet(options).then(response => {
             const info = JSON.parse(response);
             ( typeof info.error !== 'undefined' && info.error ) ? msgToSend = "Error contacting the quotes API :crying_cat_face:" : msgToSend = `*"${info.contents.quotes[0].quote}"*\n-${info.contents.quotes[0].author}`;
-
-            if (info.error.code !== 200){
-                console.error("QUOTE STATUS:", chalk.red(info.error.code));
-            }else {
-                console.log("QUOTE RECEIPT:", chalk.green(info.error.code));
-            }
+            (info.error.code !== 200) ? console.error("QUOTE STATUS:", chalk.red(info.error.code)) : console.log("QUOTE RECEIPT:", chalk.green(info.error.code));
 
             sendSlackMessage(channel, msgToSend);
         });
@@ -99,7 +94,7 @@ function simpsons(app){
     app.post('/simpsons', (req, res) => {
         res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /simpsons");
-        var channel = req.body.channel_name;
+        const channel = req.body.channel_name;
 
         const options = {
             url: 'https://thesimpsonsquoteapi.glitch.me/quotes',
@@ -107,17 +102,20 @@ function simpsons(app){
             resolveWithFullResponse: true
         };
 
+       let msgToSend = "";
+
         // Query a jokes API and sends response in slack message
         request.get(options, function (error, response, body) {
             const info = JSON.parse(body);
+
             if (body.includes("D'oh!")) {
                 console.error("SIMPSONS RECEIPT:", chalk.red(500));
                 console.error("SIMPSONS RECEIPT:", chalk.red("Internal Server Error"));
 
-                var msgToSend = "Error contacting The Simpsons quote API :crying_cat_face:";
-            }else {
+                msgToSend = "Error contacting The Simpsons quote API :crying_cat_face:";
+            }else{
                 console.log("SIMPSONS RECEIPT:", chalk.green(response.statusCode));
-                var msgToSend = `*"${info[0].quote}"*\n-${info[0].character}`;
+                msgToSend = `*"${info[0].quote}"*\n-${info[0].character}`;
             }
 
             sendSlackMessage(channel, msgToSend);
@@ -135,13 +133,18 @@ function klingon(app){
     app.post('/klingon', (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /klingon");
-        var channel = req.body.channel_name;
-        var msgToTranslate = req.body.text;
+        const channel = req.body.channel_name;
+
+        let msgToTranslate = "";
+
+        ( typeof req.body.text !== "undefined" && req.body.text ) ? msgToTranslate = req.body.text : msgToTranslate = "You didn't specify parameters"
 
         const options = {
             url: 'https://api.funtranslations.com/translate/klingon.json?text='+msgToTranslate,
             headers: {'Accept': 'application/json'}
         };
+
+        let msgToSend = "";
 
         // Query a jokes API and sends response in slack message
         request.get(options, function (error, response, body) {
@@ -150,10 +153,10 @@ function klingon(app){
                 console.error("KLINGON RECEIPT:", chalk.red(info.error.code));
                 console.error("KLINGON RECEIPT:", chalk.red(info.error.message));
 
-                var msgToSend = "Error contacting the klingon translations API :crying_cat_face:";
+                msgToSend = "Error contacting the klingon translations API :crying_cat_face:";
             }else {
                 console.log("KLINGON RECEIPT:", chalk.green(response.statusCode));
-                var msgToSend = `*"${info.contents.translated}"*\n-Klingon translation of "${info.contents.text}"`;
+                msgToSend = `*"${info.contents.translated}"*\n-Klingon translation of "${info.contents.text}"`;
             }
 
             sendSlackMessage(channel, msgToSend);
