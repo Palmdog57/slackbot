@@ -33,11 +33,13 @@ function joke(app){
 
         const options = {
             url: 'https://icanhazdadjoke.com/',
-            headers: {'Accept': 'application/json'}
+            headers: {'Accept': 'application/json'},
+            resolveWithFullResponse: true
         };
 
         await RequestGet(options).then(response => {
             const info = JSON.parse(response);
+            console.log("plzWork", info);
             let msgToSend = `${info.joke} :joy_cat:`;
 
             if (info.status !== 200){
@@ -60,31 +62,31 @@ function joke(app){
  *  @URL https://quotes.rest/
 */
 function quote(app){
-    app.post('/quote', (req, res) => {
+    app.post('/quote', async (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /quote");
         var channel = req.body.channel_name;
 
         const options = {
             url: 'https://quotes.rest/qod?language=en',
-            headers: {'Accept': 'application/json'}
+            headers: {'Accept': 'application/json'},
+            resolveWithFullResponse: true
         };
 
-        // Query a jokes API and sends response in slack message
-        request.get(options, function (error, response, body) {
-            const info = JSON.parse(body);
-            if (response.statusCode !== 200){
-                console.error("QUOTE RECEIPT:", chalk.red(response.statusCode));
-                console.error("QUOTE RECEIPT:", chalk.red(info.error.message));
+        let msgToSend = "";
 
-                var msgToSend = "Error contacting the quote API :crying_cat_face:";
+        await RequestGet(options).then(response => {
+            const info = JSON.parse(response);
+            ( typeof info.error !== 'undefined' && info.error ) ? msgToSend = "Error contacting the quotes API :crying_cat_face:" : msgToSend = `*"${info.contents.quotes[0].quote}"*\n-${info.contents.quotes[0].author}`;
+
+            if (info.error.code !== 200){
+                console.error("QUOTE STATUS:", chalk.red(info.error.code));
             }else {
-                console.log("QUOTE RECEIPT:", chalk.green(response.statusCode));
-                var msgToSend = `*"${info.contents.quotes[0].quote}"*\n-${info.contents.quotes[0].author}`;
+                console.log("QUOTE RECEIPT:", chalk.green(info.error.code));
             }
 
             sendSlackMessage(channel, msgToSend);
-        }); //End request to joke API
+        });
     }); //End app.post
 }; //Close function
 
@@ -101,7 +103,8 @@ function simpsons(app){
 
         const options = {
             url: 'https://thesimpsonsquoteapi.glitch.me/quotes',
-            headers: {'Accept': 'application/json'}
+            headers: {'Accept': 'application/json'},
+            resolveWithFullResponse: true
         };
 
         // Query a jokes API and sends response in slack message
@@ -195,15 +198,13 @@ function sendSlackMessage(channel, msgToSend) {
 };
 
 const RequestGet = async function(options) {
-    if(debug === true) console.log(chalk.blue("Launched GET request..."));
-    return request(options).then(x => {
-        if(debug === true) console.log(chalk.blue("GET returning: ", x));
-        return x 
+    return request(options).then(res => {
+        //if(debug === true) console.log("Status:", res.statusCode);
+        return res.body;
     }).catch(error => {
-        //console.log();
-        return error.error;
-        //return err
+        ( typeof error.error !== 'undefined' && error.error ) ? err = error.error : err = error;
+        //err = error.error;
+        //console.log(`Returning ${err}`);
+        return err;
     })
 }
-
-
