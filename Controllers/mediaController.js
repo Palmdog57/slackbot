@@ -14,24 +14,25 @@ function lolcats(app){
     app.post('/cat', (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /cat");
-        var channel = req.body.channel_name;
+        const channel = req.body.channel_name;
 
         // Query cat API and construct message from response
         request('http://edgecats.net/random', function (error, response, body) {
+            let msgToSend = "Error occurred while trying to find the cats :crying_cat_face:"
+
             // @IMPORTANT - If the "random" part of the URL is not specified, a GIF stream will be returned
             // Unless you wanna crash the script and dump out some _pure garbage_ to slack, leave this here!!!
             if( response.headers['content-length'] > 200){
                 console.error(chalk.red("413 - Payload Too Large"));
-                console.error(chalk.red("Going for shutdown"));
-                var msgToSend = "Error occurred while trying to find the cats :crying_cat_face:"
+                console.error(chalk.red("Aborting"));
             }else{
                 if (response.statusCode !== 200) {
                     console.error("CAT RECEIPT:", chalk.red(response.statusCode));
                     console.error(error);
-                    var msgToSend = "Error occurred while trying to find the cats :crying_cat_face:"
+                    msgToSend = "Error occurred while trying to find the cats :crying_cat_face:"
                 }else{
                     console.log("CAT RECEIPT:", chalk.green(response.statusCode));
-                    var msgToSend = body
+                    msgToSend = body
                 }
             }
 
@@ -62,10 +63,10 @@ function morning(app){
         if (!req.body.text){
             ( !morning_gif.greetings[number] ) ? greeting = "Good Morning!" : greeting = morning_gif.greetings[number];
         }else{
-            var greeting = req.body.text;
+            const greeting = req.body.text;
         }
 
-        var msgToSend = `*${greeting}*\n${morning_gif.gifs[number]}`;
+        const msgToSend = `*${greeting}*\n${morning_gif.gifs[number]}`;
         sendSlackMessage(channel, msgToSend);
 
     }); // End app.post
@@ -80,12 +81,12 @@ function youtube(app){
     app.post('/youtube', (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /youtube");
-        var channel = req.body.channel_name;
+        const channel = req.body.channel_name;
         
         // If no text was sent, make them pay
         if (!req.body.text) search = "rick roll";
-        var search = encodeURIComponent(req.body.text);
-        var youtubeKey = process.env.YOUTUBE_KEY;
+        const search = encodeURIComponent(req.body.text);
+        const youtubeKey = process.env.YOUTUBE_KEY;
 
         // Construct YouTube request
         const options = {
@@ -95,15 +96,15 @@ function youtube(app){
 
         // Send request with constructed operators
         request(options, function (error, response, body) {
-            var resp = JSON.parse(body);
+            const resp = JSON.parse(body);
             if (response.statusCode !== 200) {
                 console.error("YOUTUBE RECEIPT:", chalk.red(response.statusCode));
                 console.error(resp.error.message);
-                var msgToSend = "A problem occurred contacting YouTube :crying_cat_face:"
+                const msgToSend = "A problem occurred contacting YouTube :crying_cat_face:"
             }else{
                 console.log("YOUTUBE RECEIPT:", chalk.green(response.statusCode));
-                var videoId = resp.items[0].id.videoId;
-                var msgToSend = `https://www.youtube.com/watch?v=${videoId}`;
+                const videoId = resp.items[0].id.videoId;
+                const msgToSend = `https://www.youtube.com/watch?v=${videoId}`;
             }
 
             sendSlackMessage(channel, msgToSend);
@@ -121,12 +122,12 @@ function spotify(app){
     app.post('/spotify', (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /spotify");
-        var channel = req.body.channel_name;
+        const channel = req.body.channel_name;
         
         // If no text was specified, send the inevitable
         if (!req.body.text) search = "rick roll";
-        var search = encodeURIComponent(req.body.text);
-        var spotifyKey = process.env.SPOTIFY_CLIENT_SECRET;
+        const search = encodeURIComponent(req.body.text);
+        const spotifyKey = process.env.SPOTIFY_CLIENT_SECRET;
 
         // Construct Spotify request
         const options = {
@@ -139,15 +140,15 @@ function spotify(app){
 
         // Send request with constructed operators
         request(options, function (error, response, body) {
-            var resp = JSON.parse(body);
+            const resp = JSON.parse(body);
             if (response.statusCode !== 200) {
                 console.error("SPOTIFY RECEIPT:", chalk.red(response.statusCode));
                 console.error("SPOTIFY RECEIPT:", chalk.red(resp.error.message));
-                var msgToSend = "A problem occurred contacting Spotify :crying_cat_face:"
+                msgToSend = "A problem occurred contacting Spotify :crying_cat_face:"
             }else{
                 console.log("SPOTIFY RECEIPT:", chalk.green(response.statusCode));
-                var tracks = resp.tracks.items[0];
-                var msgToSend = tracks.external_urls.spotify;
+                const tracks = resp.tracks.items[0];
+                msgToSend = tracks.external_urls.spotify;
             }
 
             sendSlackMessage(channel, msgToSend);
@@ -167,7 +168,7 @@ module.exports = {
 function sendSlackMessage(channel, msgToSend) {
 
     // Build slack requirements
-    var data = {
+    const data = {
         form: {
             token: process.env.SLACK_AUTH_TOKEN,
             channel: channel,
@@ -177,7 +178,7 @@ function sendSlackMessage(channel, msgToSend) {
 
     // Run the request using constructed operators
     request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
-        var msg = JSON.parse(response.body);
+        const msg = JSON.parse(response.body);
         if (msg.ok === true){
             msg.statusCode = 200;
             console.log("SLACK RECEIPT:", chalk.green(msg.statusCode));
