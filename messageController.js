@@ -1,7 +1,7 @@
 // Initialise the required packages & debug mode
 const request = require("request-promise-native");
 const chalk = require('chalk');
-const debug = true;
+const debug = false;
 
 /** 
  *  When the server receives a ping, it replies with "pong"
@@ -29,7 +29,7 @@ function joke(app){
     app.post('/joke', async (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /joke");
-        var channel = req.body.channel_name;
+        const channel = req.body.channel_name;
 
         const options = {
             url: 'https://icanhazdadjoke.com/',
@@ -39,12 +39,10 @@ function joke(app){
 
         await RequestGet(options).then(response => {
             const info = JSON.parse(response);
-            if(debug === true) console.log("RequestGet function returned: ", info);
             let msgToSend = `${info.joke} :joy_cat:`;
 
             if (info.status !== 200){
                 console.error("JOKE STATUS:", chalk.red(info.status));
-                console.error("JOKE STATUS:", chalk.red(info.message));
                 msgToSend = "Error contacting the joke API :crying_cat_face:";
             }else {
                 console.log("JOKE RECEIPT:", chalk.green(info.status));
@@ -65,7 +63,7 @@ function quote(app){
     app.post('/quote', async (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /quote");
-        var channel = req.body.channel_name;
+        const channel = req.body.channel_name;
 
         const options = {
             url: 'https://quotes.rest/qod?language=en',
@@ -77,8 +75,15 @@ function quote(app){
 
         await RequestGet(options).then(response => {
             const info = JSON.parse(response);
-            ( typeof info.error !== 'undefined' && info.error ) ? msgToSend = "Error contacting the quotes API :crying_cat_face:" : msgToSend = `*"${info.contents.quotes[0].quote}"*\n-${info.contents.quotes[0].author}`;
-            (info.error.code !== 200) ? console.error("QUOTE STATUS:", chalk.red(info.error.code)) : console.log("QUOTE RECEIPT:", chalk.green(info.error.code));
+            if (debug === true) console.log(info);
+
+            if(typeof info.error !== 'undefined' && info.error){
+                console.error("QUOTE STATUS:", chalk.red(info.error.code));
+                msgToSend = "Error contacting the quotes API :crying_cat_face:";
+            }else{
+                console.log("QUOTE RECEIPT:", chalk.green(200));
+                msgToSend = `*"${info.contents.quotes[0].quote}"*\n-${info.contents.quotes[0].author}`;
+            }
 
             sendSlackMessage(channel, msgToSend);
         });
@@ -104,7 +109,6 @@ function simpsons(app){
 
        let msgToSend = "";
 
-        // Query a jokes API and sends response in slack message
         request.get(options, function (error, response, body) {
             const info = JSON.parse(body);
 
@@ -130,37 +134,29 @@ function simpsons(app){
  *  @URL https://api.funtranslations.com/translate/klingon.json
 */
 function klingon(app){
-    app.post('/klingon', (req, res) => {
+    app.post('/klingon', async (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /klingon");
         const channel = req.body.channel_name;
 
         let msgToTranslate = "";
+        let msgToSend = "";
 
-        ( typeof req.body.text !== "undefined" && req.body.text ) ? msgToTranslate = req.body.text : msgToTranslate = "You didn't specify parameters"
+        ( typeof req.body.text !== "undefined" && req.body.text ) ? msgToTranslate = req.body.text : msgToTranslate = "You didn't specify parameters :man-facepalming:"
 
         const options = {
             url: 'https://api.funtranslations.com/translate/klingon.json?text='+msgToTranslate,
             headers: {'Accept': 'application/json'}
         };
 
-        let msgToSend = "";
-
-        // Query a jokes API and sends response in slack message
-        request.get(options, function (error, response, body) {
-            const info = JSON.parse(body);
-            if (response.statusCode !== 200) {
-                console.error("KLINGON RECEIPT:", chalk.red(info.error.code));
-                console.error("KLINGON RECEIPT:", chalk.red(info.error.message));
-
-                msgToSend = "Error contacting the klingon translations API :crying_cat_face:";
-            }else {
-                console.log("KLINGON RECEIPT:", chalk.green(response.statusCode));
-                msgToSend = `*"${info.contents.translated}"*\n-Klingon translation of "${info.contents.text}"`;
-            }
+        await RequestGet(options).then(response => {
+            const info = JSON.parse(response);
+            (typeof info.error !== 'undefined' && info.error) ? msgToSend = "Error contacting the klingon API :crying_cat_face:" : msgToSend = `*"${info.contents.translated}"*\n-Klingon translation of "${info.contents.text}"`;
+            (info.error.code !== 200) ? console.error("QUOTE STATUS:", chalk.red(info.error.code)) : console.log("QUOTE RECEIPT:", chalk.green(info.error.code));
 
             sendSlackMessage(channel, msgToSend);
-        }); //End request to joke API
+
+        }); //End request to klingon API
     }); //End app.post
 }; //Close function
 
@@ -177,7 +173,7 @@ module.exports = {
 function sendSlackMessage(channel, msgToSend) {
 
     // Build slack requirements
-    var data = {
+    const data = {
         form: {
             token: process.env.SLACK_AUTH_TOKEN,
             channel: channel,
@@ -200,14 +196,14 @@ function sendSlackMessage(channel, msgToSend) {
     }); //End request to slack API
 };
 
-const RequestGet = async function(options) {
+// Ping API with specified data
+async function RequestGet(options) {
     return request(options).then(res => {
-        //if(debug === true) console.log("Status:", res.statusCode);
+        if(debug === true) console.log("Status:", res.statusCode);
         return res.body;
     }).catch(error => {
         ( typeof error.error !== 'undefined' && error.error ) ? err = error.error : err = error;
-        //err = error.error;
-        //console.log(`Returning ${err}`);
+        if (debug === true) console.log(`Returning ${err}`);
         return err;
-    })
-}
+    });
+};
