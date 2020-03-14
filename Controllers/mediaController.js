@@ -129,7 +129,6 @@ function spotify(app){
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /spotify");
         const channel = req.body.channel_name;
-        const spotifyKey = process.env.SPOTIFY_CLIENT_SECRET;
         let search = "";
 
         (!req.body.text) ? search = "never gonna give you up" : search = encodeURIComponent(req.body.text);

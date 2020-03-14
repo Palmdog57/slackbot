@@ -1,6 +1,4 @@
 // Import && initialise the required packages 
-const request = require('request');
-const chalk = require('chalk');
 const help_msg = require('../model/help.json');
 const debug = false;
 
@@ -13,15 +11,14 @@ function help(app){
     app.post('/help', (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /help");
-        var channel = req.body.channel_name;
+        const channel = req.body.channel_name;
 
         // If there are no arguments, return help on all commands
         var helpCmd = req.body.text;
-        var msgToSend = help_msg[helpCmd];
+        let msgToSend = help_msg[helpCmd];
 
         // Send list of all commands with markdown
         if (!msgToSend) {
-            var msgToSend = "";
             msgToSend += "*Here are all the commands and what they do: *\n";
             for (const [key, value] of Object.entries(help_msg)) {
                 msgToSend += `*${key}*- ${value}\n`;
@@ -40,15 +37,12 @@ function help(app){
  */
 function uptime(app){
     app.post('/uptime', (req, res) => {
-        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
+        res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /uptime");
-        
-        var sec = process.uptime();
-        const yourTime = convertHMS(sec); // 4600 seconds
-        //console.log(yourTime);
-
-        var channel = req.body.channel_name;
-        var msgToSend = `Mittens has been up for ${yourTime}`;
+        const channel = req.body.channel_name;
+        const sec = process.uptime();
+        const yourTime = convertHMS(sec);
+        const msgToSend = `Mittens has been up for ${yourTime}`;
         
         sendSlackMessage(channel, msgToSend);
     }); //End app.post
@@ -73,7 +67,7 @@ function sendSlackMessage(channel, msgToSend) {
 
     // Send constructed data
     request.post('https://slack.com/api/chat.postMessage', data, function (error, response, body) {
-        var msg = JSON.parse(response.body);
+        const msg = JSON.parse(response.body);
         if (msg.ok === true){
             msg.statusCode = 200;
             console.log("SLACK RECEIPT:", chalk.green(msg.statusCode));
