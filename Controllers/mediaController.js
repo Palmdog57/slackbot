@@ -1,6 +1,6 @@
 // Initialise the required packages 
 // Include gif && greeting data
-const request = require('request');
+const request = require("request-promise-native");
 const morning_gif = require('../model/data.json');
 const chalk = require('chalk');
 const debug = false;
@@ -78,38 +78,39 @@ function morning(app){
  *  @require process.env
  */
 function youtube(app){
-    app.post('/youtube', (req, res) => {
+    app.post('/youtube', async (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /youtube");
         const channel = req.body.channel_name;
-        
+        let search = "";
+
+
         // If no text was sent, make them pay
-        if (!req.body.text) search = "rick roll";
-        const search = encodeURIComponent(req.body.text);
+        (!req.body.text) ? search = "rick roll" : search = encodeURIComponent(req.body.text);
         const youtubeKey = process.env.YOUTUBE_KEY;
 
         // Construct YouTube request
         const options = {
             url: `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${search}&type=video&key=${youtubeKey}`,
-            headers: {'Accept': 'application/json'}
+            headers: {'Accept': 'application/json'},
+            resolveWithFullResponse: true
           };
 
-        // Send request with constructed operators
-        request(options, function (error, response, body) {
-            const resp = JSON.parse(body);
-            if (response.statusCode !== 200) {
-                console.error("YOUTUBE RECEIPT:", chalk.red(response.statusCode));
-                console.error(resp.error.message);
-                const msgToSend = "A problem occurred contacting YouTube :crying_cat_face:"
+        await RequestGet(options).then(response => {
+            const info = JSON.parse(response);
+            let msgToSend = "A problem occurred contacting YouTube :crying_cat_face:";
+
+            if (typeof info.error !== "undefined" && info.error) {
+                console.error("YOUTUBE RECEIPT:", chalk.red(info.error.code));
+                console.error("YOUTUBE RECEIPT:", chalk.red(info.error.message));
             }else{
-                console.log("YOUTUBE RECEIPT:", chalk.green(response.statusCode));
-                const videoId = resp.items[0].id.videoId;
-                const msgToSend = `https://www.youtube.com/watch?v=${videoId}`;
+                console.error("YOUTUBE RECEIPT:", chalk.green(200));
+                msgToSend = `https://www.youtube.com/watch?v=${info.items[0].id.videoId}`;
             }
 
             sendSlackMessage(channel, msgToSend);
 
-        }); //End request to YouTube
+           });
     }); //End app.post
 }; //Close function
 
