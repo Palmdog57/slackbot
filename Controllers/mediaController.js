@@ -52,24 +52,19 @@ function morning(app){
     app.post('/morning', (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /morning");
-        var channel = req.body.channel_name;
+        const channel = req.body.channel_name;
 
         // Random number generator
-        var number = Math.floor(Math.random() * 26);
+        const number = Math.floor(Math.random() * 26);
         if (debug === true) console.log("NUMBER: ", number);
 
-        // If no text was sent from slack && the random number is higher than 10, set a default message
+        let greeting = "";
         if (!req.body.text){
-            if (!morning_gif.greetings[number]){
-                var greeting = "Good Morning!";
-            }else{
-                var greeting = morning_gif.greetings[number];
-            }
+            ( !morning_gif.greetings[number] ) ? greeting = "Good Morning!" : greeting = morning_gif.greetings[number];
         }else{
             var greeting = req.body.text;
         }
 
-        // Finalise slack message with markdown & send
         var msgToSend = `*${greeting}*\n${morning_gif.gifs[number]}`;
         sendSlackMessage(channel, msgToSend);
 
@@ -193,4 +188,16 @@ function sendSlackMessage(channel, msgToSend) {
             console.log("ERROR:", chalk.red(msg.error));
         }
     }); //End request to slack API
+};
+
+// Ping API with specified data
+async function RequestGet(options) {
+    return request(options).then(res => {
+        if(debug === true) console.log("Status:", res.statusCode);
+        return res.body;
+    }).catch(error => {
+        ( typeof error.error !== 'undefined' && error.error ) ? err = error.error : err = error;
+        if (debug === true) console.log(`Returning ${err}`);
+        return err;
+    });
 };
