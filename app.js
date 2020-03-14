@@ -16,7 +16,7 @@ app.listen(process.env.PORT || PORT, function() {
 });
 
 /* ---------------------------- Messaging engine ---------------------------- */
-var messages = require("./messageController.js");
+var messages = require("./Controllers/messageController.js");
 messages.ping(app);
 messages.joke(app);
 messages.quote(app);
@@ -24,13 +24,13 @@ messages.simpsons(app);
 messages.klingon(app);
 
 /* ------------------------------- Media Engine ------------------------------- */
-var media = require("./mediaController.js")
+var media = require("./Controllers/mediaController.js")
 media.lolcats(app);
 media.morning(app);
 media.youtube(app);
 media.spotify(app);
 
 /* ------------------------------ Admin Engine ------------------------------ */
-var admin = require("./adminController.js")
+var admin = require("./Controllers/adminController.js")
 admin.help(app);
 admin.uptime(app);
