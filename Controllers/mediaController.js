@@ -1,9 +1,16 @@
 // Initialise the required packages 
 // Include gif && greeting data
 const request = require("request-promise-native");
-const morning_gif = require('../model/data.json');
+const SpotifyWebApi = require('spotify-web-api-node');
 const chalk = require('chalk');
+const morning_gif = require('../model/data.json');
 const debug = false;
+
+// credentials are optional
+const spotifyApi = new SpotifyWebApi({
+    clientId: 'ded6b1e4e05f43919e7a9d85cbb3d4ec',
+    clientSecret: 'c9d1e5203cc04f13bbaa3c15771e0e63'
+});
 
 /** 
  *  Return a random cat GIF to the channel the message originated from
@@ -82,12 +89,10 @@ function youtube(app){
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /youtube");
         const channel = req.body.channel_name;
+        const youtubeKey = process.env.YOUTUBE_KEY;
         let search = "";
 
-
-        // If no text was sent, make them pay
         (!req.body.text) ? search = "rick roll" : search = encodeURIComponent(req.body.text);
-        const youtubeKey = process.env.YOUTUBE_KEY;
 
         // Construct YouTube request
         const options = {
@@ -120,42 +125,50 @@ function youtube(app){
  *  @require process.env
  */
 function spotify(app){
-    app.post('/spotify', (req, res) => {
+    app.post('/spotify', async (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /spotify");
         const channel = req.body.channel_name;
-        
-        // If no text was specified, send the inevitable
-        if (!req.body.text) search = "rick roll";
-        const search = encodeURIComponent(req.body.text);
         const spotifyKey = process.env.SPOTIFY_CLIENT_SECRET;
+        let search = "";
 
-        // Construct Spotify request
-        const options = {
-            url: `https://api.spotify.com/v1/search?q=${search}&type=track&market=US&limit=1`,
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer BQCguQE_EfraZyEk1wby4wVvLqxkCjRFwv2DiqBiZZg5m26f5wpdBdYXa0gGQvM94_u3mV55TnY0qQ4iNUoRcJ_aZLgxfcr6x8-D2vaNKCQw9aZIg16U_gnV3_7IiB3jC9FbBZiZ3J4vpB0'
+        (!req.body.text) ? search = "never gonna give you up" : search = encodeURIComponent(req.body.text);
+
+        var options = {
+            'method': 'POST',
+            'url': 'https://accounts.spotify.com/api/token',
+            'headers': {
+              'Authorization': 'Basic ZGVkNmIxZTRlMDVmNDM5MTllN2E5ZDg1Y2JiM2Q0ZWM6YzlkMWU1MjAzY2MwNGYxM2JiYWEzYzE1NzcxZTBlNjM=',
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            form: {
+              'grant_type': 'client_credentials'
             }
           };
+          request(options, function (error, response) { 
+              if (error) throw new Error(error);
+              const res = JSON.parse(response.body);
+              var access_token = res.access_token;
+              
+              var trackOpts = {
+                  'url': `https://api.spotify.com/v1/search?q=${search}&type=track&market=US&limit=1`,
+                  'headers': {
+                      'Accept': 'application/json',
+                      'Authorization': `Bearer ${access_token}`
+                  }
+              };
+          
+              request(trackOpts, function (error, response) { 
+                if (error) throw new Error(error);
+                var info = JSON.parse(response.body);
+                const msgToSend = info.tracks.items[0].external_urls.spotify;
 
-        // Send request with constructed operators
-        request(options, function (error, response, body) {
-            const resp = JSON.parse(body);
-            if (response.statusCode !== 200) {
-                console.error("SPOTIFY RECEIPT:", chalk.red(response.statusCode));
-                console.error("SPOTIFY RECEIPT:", chalk.red(resp.error.message));
-                msgToSend = "A problem occurred contacting Spotify :crying_cat_face:"
-            }else{
-                console.log("SPOTIFY RECEIPT:", chalk.green(response.statusCode));
-                const tracks = resp.tracks.items[0];
-                msgToSend = tracks.external_urls.spotify;
-            }
+                sendSlackMessage(channel, msgToSend);
 
-            sendSlackMessage(channel, msgToSend);
+              });
+          });
 
         }); //End request to Spotify
-    }); //End app.post
 }; //Close function
 
 module.exports = {
