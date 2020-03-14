@@ -8,9 +8,9 @@ const debug = false;
  *  @require help.json
  */
 function help(app){
-    app.post('/help', (req, res) => {
+    app.post('/command', (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
-        console.log("\nCOMMAND: /help");
+        console.log("\nCOMMAND: /command");
         const channel = req.body.channel_name;
 
         // If there are no arguments, return help on all commands
@@ -41,8 +41,8 @@ function uptime(app){
         console.log("\nCOMMAND: /uptime");
         const channel = req.body.channel_name;
         const sec = process.uptime();
-        const yourTime = convertHMS(sec);
-        const msgToSend = `Mittens has been up for ${yourTime}`;
+        const uptime = convertHMS(sec);
+        const msgToSend = `Mittens has been up for ${uptime}`;
         
         sendSlackMessage(channel, msgToSend);
     }); //End app.post
