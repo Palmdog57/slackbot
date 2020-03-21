@@ -1,7 +1,8 @@
 // Initialise the required packages & debug mode
 const request = require("request-promise-native");
-const chalk = require('chalk');
-const debug = false;
+let Controller = require("./Controller");
+Controller = new Controller;
+const debug = true;
 
 /** 
  *  When the server receives a ping, it replies with "pong"
@@ -11,11 +12,12 @@ const debug = false;
 function ping(app){
     app.post('/ping', (req, res) => {
         res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
-        console.log("\nCOMMAND: /ping");
-
+        Controller.info("\nCOMMAND:",  "/ping");
         const channel = req.body.channel_name;
-        const msgToSend = "pong";
-        
+        const msgToSend = "pong!";
+
+        if (debug === true) Controller.debugToJSON("Message we're sending", msgToSend);
+
         sendSlackMessage(channel, msgToSend);
     }); //End app.post
 }; //Close function
@@ -28,7 +30,7 @@ function ping(app){
 function joke(app){
     app.post('/joke', async (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
-        console.log("\nCOMMAND: /joke");
+        Controller.info("\nCOMMAND:",  "/joke");
         const channel = req.body.channel_name;
 
         const options = {
@@ -42,10 +44,10 @@ function joke(app){
             let msgToSend = `${info.joke} :joy_cat:`;
 
             if (info.status !== 200){
-                console.error("JOKE STATUS:", chalk.red(info.status));
+                Controller.error("JOKE STATUS:", info.status);
                 msgToSend = "Error contacting the joke API :crying_cat_face:";
             }else {
-                console.log("JOKE RECEIPT:", chalk.green(info.status));
+                Controller.success("JOKE RECEIPT:", info.status);
             }
 
             sendSlackMessage(channel, msgToSend);
@@ -62,7 +64,7 @@ function joke(app){
 function quote(app){
     app.post('/quote', async (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
-        console.log("\nCOMMAND: /quote");
+        Controller.info("\nCOMMAND:",  "/quote");
         const channel = req.body.channel_name;
 
         const options = {
@@ -75,13 +77,13 @@ function quote(app){
 
         await RequestGet(options).then(response => {
             const info = JSON.parse(response);
-            if (debug === true) console.log(info);
+            if (debug === true) console.log("DEBUG: ", info);
 
             if(typeof info.error !== 'undefined' && info.error){
-                console.error("QUOTE STATUS:", chalk.red(info.error.code));
+                Controller.error("QUOTE STATUS:", info.error.code);
                 msgToSend = "Error contacting the quotes API :crying_cat_face:";
             }else{
-                console.log("QUOTE RECEIPT:", chalk.green(200));
+                Controller.success("QUOTE RECEIPT:", Controller.codes.SUCCESS);
                 msgToSend = `*"${info.contents.quotes[0].quote}"*\n-${info.contents.quotes[0].author}`;
             }
 
@@ -98,7 +100,7 @@ function quote(app){
 function simpsons(app){
     app.post('/simpsons', (req, res) => {
         res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
-        console.log("\nCOMMAND: /simpsons");
+        Controller.info("\nCOMMAND:",  "/simpsons");
         const channel = req.body.channel_name;
 
         const options = {
@@ -113,12 +115,12 @@ function simpsons(app){
             const info = JSON.parse(body);
 
             if (body.includes("D'oh!")) {
-                console.error("SIMPSONS RECEIPT:", chalk.red(500));
-                console.error("SIMPSONS RECEIPT:", chalk.red("Internal Server Error"));
+                Controller.error("SIMPSONS RECEIPT:", Controller.codes.INTERNAL_SERVER_ERROR);
+                Controller.error("SIMPSONS RECEIPT:", Controller.msg.INTERNAL_SERVER_ERROR);
 
                 msgToSend = "Error contacting The Simpsons quote API :crying_cat_face:";
             }else{
-                console.log("SIMPSONS RECEIPT:", chalk.green(response.statusCode));
+                Controller.success("SIMPSONS RECEIPT:", response.statusCode);
                 msgToSend = `*"${info[0].quote}"*\n-${info[0].character}`;
             }
 
@@ -136,7 +138,7 @@ function simpsons(app){
 function klingon(app){
     app.post('/klingon', async (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
-        console.log("\nCOMMAND: /klingon");
+        Controller.info("\nCOMMAND:",  "/klingon");
         const channel = req.body.channel_name;
 
         let msgToTranslate = "";
@@ -152,7 +154,7 @@ function klingon(app){
         await RequestGet(options).then(response => {
             const info = JSON.parse(response);
             (typeof info.error !== 'undefined' && info.error) ? msgToSend = "Error contacting the klingon API :crying_cat_face:" : msgToSend = `*"${info.contents.translated}"*\n-Klingon translation of "${info.contents.text}"`;
-            (info.error.code !== 200) ? console.error("QUOTE STATUS:", chalk.red(info.error.code)) : console.log("QUOTE RECEIPT:", chalk.green(info.error.code));
+            (info.error.code !== 200) ? Controller.error("QUOTE STATUS:", info.error.code) : Controller.success("QUOTE RECEIPT:", info.error.code);
 
             sendSlackMessage(channel, msgToSend);
 
@@ -186,12 +188,12 @@ function sendSlackMessage(channel, msgToSend) {
         var msg = JSON.parse(response.body);
         if (msg.ok === true){
             msg.statusCode = 200;
-            console.log("SLACK RECEIPT:", chalk.green(msg.statusCode));
+            Controller.success("SLACK RECEIPT:", msg.statusCode);
             console.log("MESSAGE SENT:", msg.message.text);
         } else{
             msg.statusCode = 500;
-            console.log("SLACK RECEIPT:", chalk.red(msg.statusCode));
-            console.log("ERROR:", chalk.red(msg.error));
+            Controller.error("SLACK RECEIPT:", msg.statusCode);
+            Controller.error("ERROR:", msg.error);
         }
     }); //End request to slack API
 };
@@ -199,11 +201,11 @@ function sendSlackMessage(channel, msgToSend) {
 // Ping API with specified data
 async function RequestGet(options) {
     return request(options).then(res => {
-        if(debug === true) console.log("Status:", res.statusCode);
+        if(debug === true) Controller.debug("Status:", res.statusCode);
         return res.body;
     }).catch(error => {
         ( typeof error.error !== 'undefined' && error.error ) ? err = error.error : err = error;
-        if (debug === true) console.log(`Returning ${err}`);
+        if (debug === true) Controller.debug(`Returning ${err}`);
         return err;
     });
 };

@@ -1,25 +1,9 @@
 // Import && initialise the required packages 
 //const help_msg = require('../model/help.json');
 const request = require("request-promise-native");
-
 const chalk = require('chalk');
-require("../Functions/colorScheme.js");
-const verbose = chalk.bold.magenta;
-
-// const MongoClient = require('mongodb').MongoClient;
-// const client = MongoClient("mongodb://localhost:27017/", { useUnifiedTopology: true });
-
-const debug = true;
-
 const loadDB = require('../db');
-
-// client.on('close', () => {
-//     console.log("MONGO CONNECTION IS CLOSED");
-// });
-//
-// client.on('connect', () => {
-//     console.log("===CONNECTION TO MONGO ESTABLISHED===");
-// });
+const debug = true;
 
 /** 
  *  Return a help message for the specified command
