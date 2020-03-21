@@ -1,8 +1,9 @@
 // Import && initialise the required packages 
 //const help_msg = require('../model/help.json');
 const request = require("request-promise-native");
-const chalk = require('chalk');
 const loadDB = require('../db');
+let Controller = require("./Controller");
+Controller = new Controller;
 const debug = true;
 
 /** 
@@ -20,11 +21,11 @@ function command(app){
 
         if(typeof req.body.text !== 'undefined' && req.body.text){
             cmdToSearch = req.body.text;
-            if (debug === true) console.log('cmdToSearch: ', verbose(cmdToSearch));
+            if (debug === true) Controller.verbose('cmdToSearch: ', cmdToSearch);
 
             await findCommand(cmdToSearch).then(function(description){
                 if (debug === true) console.log("FIND_COMMAND_RETURNED: ", description);
-                msgToSend = description[0].cmd_desc;
+                msgToSend = `*/${cmdToSearch}*\n${description[0].cmd_desc}`;
             });
         }
 
@@ -74,12 +75,12 @@ function sendSlackMessage(channel, msgToSend) {
         const msg = JSON.parse(response.body);
         if (msg.ok === true){
             msg.statusCode = 200;
-            console.log("SLACK RECEIPT:", chalk.green(msg.statusCode));
+            Controller.success("SLACK RECEIPT:", msg.statusCode);
             console.log("MESSAGE SENT:", msg.message.text);
         } else{
             msg.statusCode = 500;
-            console.log("SLACK RECEIPT:", chalk.red(msg.statusCode));
-            console.log("ERROR:", chalk.red(msg.error));
+            Controller.error("SLACK RECEIPT:", msg.statusCode);
+            Controller.error("ERROR:", msg.error);
         }
     }); //End request to slack API
 };
