@@ -24,13 +24,13 @@ messages.simpsons(app);
 messages.klingon(app);
 
 /* ------------------------------- Media Engine ------------------------------- */
-var media = require("./Controllers/mediaController.js")
+var media = require("./Controllers/mediaController.js");
 media.lolcats(app);
 media.morning(app);
 media.youtube(app);
 media.spotify(app);
 
 /* ------------------------------ Admin Engine ------------------------------ */
-var admin = require("./Controllers/adminController.js")
-admin.help(app);
+var admin = require("./Controllers/adminController.js");
+admin.command(app);
 admin.uptime(app);

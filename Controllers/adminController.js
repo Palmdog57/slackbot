@@ -1,30 +1,50 @@
 // Import && initialise the required packages 
-const help_msg = require('../model/help.json');
-const debug = false;
+//const help_msg = require('../model/help.json');
+const request = require("request-promise-native");
+
+const chalk = require('chalk');
+require("../Functions/colorScheme.js");
+const verbose = chalk.bold.magenta;
+
+// const MongoClient = require('mongodb').MongoClient;
+// const client = MongoClient("mongodb://localhost:27017/", { useUnifiedTopology: true });
+
+const debug = true;
+
+const loadDB = require('../db');
+
+// client.on('close', () => {
+//     console.log("MONGO CONNECTION IS CLOSED");
+// });
+//
+// client.on('connect', () => {
+//     console.log("===CONNECTION TO MONGO ESTABLISHED===");
+// });
 
 /** 
  *  Return a help message for the specified command
  *  If no command was specified, return help on all commands
  *  @require help.json
  */
-function help(app){
-    app.post('/command', (req, res) => {
+function command(app){
+    app.post('/command', async (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /command");
         const channel = req.body.channel_name;
+        let cmdToSearch = "";
+        let msgToSend = "There was a problem getting your command :crying_cat_face:";
 
-        // If there are no arguments, return help on all commands
-        var helpCmd = req.body.text;
-        let msgToSend = help_msg[helpCmd];
+        if(typeof req.body.text !== 'undefined' && req.body.text){
+            cmdToSearch = req.body.text;
+            if (debug === true) console.log('cmdToSearch: ', verbose(cmdToSearch));
 
-        // Send list of all commands with markdown
-        if (!msgToSend) {
-            msgToSend += "*Here are all the commands and what they do: *\n";
-            for (const [key, value] of Object.entries(help_msg)) {
-                msgToSend += `*${key}*- ${value}\n`;
-            }
+            await findCommand(cmdToSearch).then(function(description){
+                if (debug === true) console.log("FIND_COMMAND_RETURNED: ", description);
+                msgToSend = description[0].cmd_desc;
+            });
         }
 
+        console.log("Sending to slack: ", msgToSend);
         sendSlackMessage(channel, msgToSend);
 
     }); //End app.post
@@ -49,7 +69,7 @@ function uptime(app){
 }; //Close function
 
 module.exports = {
-    help,
+    command,
     uptime
 };
 
@@ -91,4 +111,11 @@ function convertHMS(value) {
     if (minutes < 10) {minutes = "0"+minutes;}
     if (seconds < 10) {seconds = "0"+seconds;}
     return hours+' hours '+minutes+' minutes '+seconds+' seconds '; // Return is HH : MM : SS
+}
+
+/** Query the mongoDB database */
+async function findCommand(cmdToSearch) {
+    const db = await loadDB();
+    //var dbo = db.db("slackbot");
+    return await db.collection("commands").find({"cmd_name":cmdToSearch}).toArray();
 }

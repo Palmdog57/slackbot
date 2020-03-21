@@ -5,10 +5,11 @@ const client = MongoClient(url, { useUnifiedTopology: true });
 
 client.connect(function(err, db) {
   if (err) throw err;
-  var dbo = db.db("hooli");
-  dbo.collection("bookstore").find().toArray(function(err, result) {
+  var dbo = db.db("slackbot");
+  dbo.collection("commands").find({"cmd_name":'cat'}).toArray(function(err, result) {
     if (err) throw err;
-    console.log(result);
+    console.log(typeof(result));
+    console.log(result[0].cmd_desc);
     db.close();
   });
 });
