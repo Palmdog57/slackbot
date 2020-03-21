@@ -1,0 +1,8 @@
+{"cmd_name":"ping", "cmd_desc":"Pong!"}
+{"cmd_name":"cat", "cmd_desc":"View a funny cat gif"}
+{"cmd_name":"joke", "cmd_desc":"Tell me a joke"}
+{"cmd_name":"quote", "cmd_desc":"Inspire me with a famouse quote"}
+{"cmd_name":"simpsons", "cmd_desc":"Get a quote from a random simpsons character"}
+{"cmd_name":"klingon", "cmd_desc":"Translate something in the language or warriors"}
+{"cmd_name":"youtube", "cmd_desc":"Search for a YouTube Video and return the first result"}
+{"cmd_name":"spotify", "cmd_desc":"Search for a song on spotify and return the URL"}
