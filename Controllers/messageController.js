@@ -11,8 +11,9 @@ const debug = true;
  */
 function ping(app){
     app.post('/ping', (req, res) => {
-        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
-        Controller.info("\nCOMMAND:",  "/ping");
+        const name = "ping"
+        res.end();  // Send 200 OK to avoid timeout error.
+        Controller.info("\nCOMMAND:",  `/${name}`);
         const channel = req.body.channel_name;
         const msgToSend = "pong!";
 
@@ -29,8 +30,9 @@ function ping(app){
 */
 function joke(app){
     app.post('/joke', async (req, res) => {
+        const name = "joke"
         res.end(); // Send 200 OK to avoid timeout error.
-        Controller.info("\nCOMMAND:",  "/joke");
+        Controller.info("\nCOMMAND:",  `/${name}`);
         const channel = req.body.channel_name;
 
         const options = {
@@ -63,8 +65,9 @@ function joke(app){
 */
 function quote(app){
     app.post('/quote', async (req, res) => {
+        const name = "quote"
         res.end(); // Send 200 OK to avoid timeout error.
-        Controller.info("\nCOMMAND:",  "/quote");
+        Controller.info("\nCOMMAND:",  `/${name}`);
         const channel = req.body.channel_name;
 
         const options = {
@@ -99,8 +102,9 @@ function quote(app){
 */
 function simpsons(app){
     app.post('/simpsons', (req, res) => {
-        res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
-        Controller.info("\nCOMMAND:",  "/simpsons");
+        const name = "simpsons"
+        res.end();  // Send 200 OK to avoid timeout error.
+        Controller.info("\nCOMMAND:",  `/${name}`);
         const channel = req.body.channel_name;
 
         const options = {
@@ -137,24 +141,31 @@ function simpsons(app){
 */
 function klingon(app){
     app.post('/klingon', async (req, res) => {
+        const name = "klingon"
         res.end(); // Send 200 OK to avoid timeout error.
-        Controller.info("\nCOMMAND:",  "/klingon");
+        Controller.info("\nCOMMAND:",  `/${name}`);
         const channel = req.body.channel_name;
 
         let msgToTranslate = "";
         let msgToSend = "";
 
-        ( typeof req.body.text !== "undefined" && req.body.text ) ? msgToTranslate = req.body.text : msgToTranslate = "You didn't specify parameters :man-facepalming:"
+        if ( typeof req.body.text !== "undefined" && req.body.text ) msgToTranslate = req.body.text;
 
         const options = {
             url: 'https://api.funtranslations.com/translate/klingon.json?text='+msgToTranslate,
-            headers: {'Accept': 'application/json'}
+            headers: {'Accept': 'application/json'},
+            resolveWithFullResponse: true
         };
 
         await RequestGet(options).then(response => {
             const info = JSON.parse(response);
-            (typeof info.error !== 'undefined' && info.error) ? msgToSend = "Error contacting the klingon API :crying_cat_face:" : msgToSend = `*"${info.contents.translated}"*\n-Klingon translation of "${info.contents.text}"`;
-            (info.error.code !== 200) ? Controller.error("QUOTE STATUS:", info.error.code) : Controller.success("QUOTE RECEIPT:", info.error.code);
+            if (typeof info.error !== 'undefined' && info.error) {
+                msgToSend = "Error contacting the klingon API :crying_cat_face:"
+                Controller.error("QUOTE STATUS:", info.error.code)
+            }else {
+                msgToSend = `*"${info.contents.translated}"*\n-Klingon translation of "${info.contents.text}"`
+                Controller.success("QUOTE RECEIPT:", info.error);
+            }
 
             sendSlackMessage(channel, msgToSend);
 
@@ -205,7 +216,7 @@ async function RequestGet(options) {
         return res.body;
     }).catch(error => {
         ( typeof error.error !== 'undefined' && error.error ) ? err = error.error : err = error;
-        if (debug === true) Controller.debug(`Returning ${err}`);
+        // if (debug === true) Controller.debug(`Returning ${err}`);
         return err;
     });
 };

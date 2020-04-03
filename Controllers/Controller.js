@@ -20,7 +20,7 @@ class Controller{
             BAD_REQUEST: "Bad Request",
             ACCESS_DENIED:"Unauthorized",
             RESOURCE_NOT_FOUND:"Resource Not Found",
-            TEAPOT:"I'm a Teapot",
+            TEAPOT:"I'm a teapot",
 
             INTERNAL_SERVER_ERROR:"Internal Server Error",
             UNKNOWN_ERR0R:"Unknown Error"

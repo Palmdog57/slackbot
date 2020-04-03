@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="7332e933-43a7-4271-9182-104cb5352ccb" name="IONOS" url="http://77.68.112.239">
-        <fileTransfer host="77.68.112.239" port="22" privateKey="$USER_HOME$/.ssh/laravel.key" accessType="SFTP" keyPair="true">
+        <fileTransfer host="77.68.112.239" port="22" privateKey="C:\Users\tompa\Documents\keys\laravel.key" accessType="SFTP" keyPair="true">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
