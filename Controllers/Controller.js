@@ -27,6 +27,17 @@ class Controller{
         });
     }
 
+    cooldown(timeout, cmdName){
+        let numTime = timeout
+        if(isNaN(timeout)){
+            numTime = parseInt(timeout);
+        }
+
+        const msgToSend = `:${cmdName} failed due to too many requests\n\nTry again in ${numTime}:`
+        return msgToSend
+
+    }
+
     verbose(head, message){
         console.log(head, chalk.bold.white(message));
     }
