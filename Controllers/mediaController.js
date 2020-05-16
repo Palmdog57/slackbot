@@ -72,18 +72,14 @@ function morning(app){
         // Random number generator
         const number = Math.floor(Math.random() * 10);
         const num_to_search = number.toString();
+        Controller.debug("Number to search: ", num_to_search);
 
         let greeting = "";
         let gif = "";
 
-        await findGreetings(num_to_search).then(function(description){
-            // console.log(typeof(description))
-            greeting = description[0].gtn_value;
-        });
-
-        await findGIF(num_to_search).then(function(description){
-            // console.log(description);
-            gif = description[0].gif_url;
+        await findGreetingAndGif(num_to_search).then(function(res){
+            greeting = res[0][0]['gtn_value'];
+            gif = res[1][0]['gif_url']
         });
 
         const msgToSend = `*${greeting}*\n${gif}`;
@@ -207,7 +203,7 @@ function sendSlackMessage(channel, msgToSend) {
         const msg = JSON.parse(response.body);
         if (msg.ok === true){
             msg.statusCode = 200;
-            console.log("SLACK RECEIPT:", chalk.green(msg.statusCode));
+            console.log("\nSLACK RECEIPT:", chalk.green(msg.statusCode));
             console.log("MESSAGE SENT:", msg.message.text);
         } else{
             msg.statusCode = 500;
@@ -248,6 +244,17 @@ async function findGreetings(greeting_id) {
 async function findGIF(gif_id) {
     const db = await loadDB();
     return await db.collection("gifs").find({"gif_id":gif_id}).toArray();
+}
+
+async function findGreetingAndGif(num_to_search) {
+    const db = await loadDB();
+    let gtn_to_return = await db.collection("greetings").find({"gtn_id":num_to_search}).toArray();
+    let gif_to_return = await db.collection("gifs").find({"gif_id":num_to_search}).toArray(); 
+    
+    // console.log("FIND GREETING OBJECT: ", gtn_to_return);
+    // console.log("FIND GIF OBJECT: ", gif_to_return);
+
+    return [gtn_to_return, gif_to_return]
 }
 
 
