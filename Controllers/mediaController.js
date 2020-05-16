@@ -228,24 +228,11 @@ async function RequestGet(options) {
     });
 };
 
-/** 
- * Query the mongoDB database for a greeting
- * @require INT gtn_id
+/**
+ * Query our mongoDB database for a greeting and a gif
+ * @require DATABASE_CONTROLLER
+ * @require INT num_to_search
  */
-async function findGreetings(greeting_id) {
-    const db = await loadDB();
-    return await db.collection("greetings").find({"gtn_id":greeting_id}).toArray();
-}
-
-/** 
- * Query the mongoDB database for a greeting
- * @require INT gtn_id
- */
-async function findGIF(gif_id) {
-    const db = await loadDB();
-    return await db.collection("gifs").find({"gif_id":gif_id}).toArray();
-}
-
 async function findGreetingAndGif(num_to_search) {
     const db = await loadDB();
     let gtn_to_return = await db.collection("greetings").find({"gtn_id":num_to_search}).toArray();
