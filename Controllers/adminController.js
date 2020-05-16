@@ -4,7 +4,7 @@ const request = require("request-promise-native");
 const loadDB = require('../db');
 let Controller = require("./Controller");
 Controller = new Controller;
-const debug = true;
+const debug = false;
 
 /** 
  *  Return a help message for the specified command
@@ -13,7 +13,7 @@ const debug = true;
  */
 function command(app){
     app.post('/command', async (req, res) => {
-        const name = "ping"
+        const name = "command"
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND:", `${name}`);
         let channel = req.body.channel_name;
@@ -29,6 +29,7 @@ function command(app){
                 msgToSend = `*/${cmdToSearch}*\n${description[0].cmd_desc}`;
             });
         }else {
+            console.log("### You hit the else ###");
             let command_msg = "";
             user_channel = req.body.user_id;
 
@@ -82,7 +83,8 @@ function sendSlackMessage(channel, msgToSend) {
         form: {
             token: process.env.SLACK_AUTH_TOKEN,
             channel: channel,
-            text: msgToSend
+            text: msgToSend,
+            as_user:true
         }
     };
 

@@ -13,8 +13,8 @@ const debug = false;
 
 // credentials are optional
 const spotifyApi = new SpotifyWebApi({
-    clientId: 'ded6b1e4e05f43919e7a9d85cbb3d4ec',
-    clientSecret: 'c9d1e5203cc04f13bbaa3c15771e0e63'
+    clientId: `${process.env.SPOTIFY_CLIENT_ID}`,
+    clientSecret: `${process.env.SPOTIFY_CLIENT_SECRET}`
 });
 
 /** 
@@ -144,11 +144,13 @@ function spotify(app){
 
         (!req.body.text) ? search = "never gonna give you up" : search = encodeURIComponent(req.body.text);
 
+        
+        // Authorization is Base64 encoded client:secret as per env
         var options = {
             'method': 'POST',
             'url': 'https://accounts.spotify.com/api/token',
             'headers': {
-              'Authorization': 'Basic ZGVkNmIxZTRlMDVmNDM5MTllN2E5ZDg1Y2JiM2Q0ZWM6YzlkMWU1MjAzY2MwNGYxM2JiYWEzYzE1NzcxZTBlNjM=',
+              'Authorization': 'Basic ZGVkNmIxZTRlMDVmNDM5MTllN2E5ZDg1Y2JiM2Q0ZWM6M2UwY2YzMGI2YmI2NDRmN2FlMzcxZGNlYzIwOGU2ZmY=',
               'Content-Type': 'application/x-www-form-urlencoded'
             },
             form: {
