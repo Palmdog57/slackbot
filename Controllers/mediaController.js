@@ -71,22 +71,23 @@ function morning(app){
 
         // Random number generator
         const number = Math.floor(Math.random() * 10);
-        console.log("NUMBER: ", number);
+        const num_to_search = number.toString();
 
-        // let greeting = "";
-        // if (!req.body.text){
-        //     ( !morning_gif.greetings[number] ) ? greeting = "Good Morning!" : greeting = morning_gif.greetings[number];
-        // }else{
-        //     const greeting = req.body.text;
-        // }
+        let greeting = "";
+        let gif = "";
 
-        await findGreetings(number).then(function(description){
-            console.log(typeof(description))
-            Controller.debug(description);
+        await findGreetings(num_to_search).then(function(description){
+            // console.log(typeof(description))
+            greeting = description[0].gtn_value;
         });
 
-        // const msgToSend = `*${greeting}*\n${morning_gif.gifs[number]}`;
-        // sendSlackMessage(channel, msgToSend);
+        await findGIF(num_to_search).then(function(description){
+            // console.log(description);
+            gif = description[0].gif_url;
+        });
+
+        const msgToSend = `*${greeting}*\n${gif}`;
+        sendSlackMessage(channel, msgToSend);
 
     }); // End app.post
 }; // Close function
@@ -238,6 +239,15 @@ async function RequestGet(options) {
 async function findGreetings(greeting_id) {
     const db = await loadDB();
     return await db.collection("greetings").find({"gtn_id":greeting_id}).toArray();
+}
+
+/** 
+ * Query the mongoDB database for a greeting
+ * @require INT gtn_id
+ */
+async function findGIF(gif_id) {
+    const db = await loadDB();
+    return await db.collection("gifs").find({"gif_id":gif_id}).toArray();
 }
 
 
