@@ -1,7 +1,11 @@
+/** 
+ * Import required libraries and initialize connection to Mongo
+ */
+require('dotenv').config();
 var MongoClient = require('mongodb').MongoClient;
-var url = "mongodb://localhost:27017/";
+const urlConstructor = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@localhost:27017/slackbot`
 
-const client = MongoClient(url, { useUnifiedTopology: true });
+const client = MongoClient(urlConstructor, { useUnifiedTopology: true });
 
 client.connect(function(err, db) {
   if (err) throw err;
