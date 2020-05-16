@@ -1,7 +1,7 @@
 // Initialise the required packages & debug mode
-const request = require('request');
+const request = require("request-promise-native");
 const chalk = require('chalk');
-const debug = true;
+const debug = false;
 
 /** 
  *  When the server receives a ping, it replies with "pong"
@@ -12,10 +12,9 @@ function ping(app){
     app.post('/ping', (req, res) => {
         res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /ping");
-        console.log( process.uptime() );
 
-        var channel = req.body.channel_name;
-        var msgToSend = "pong";
+        const channel = req.body.channel_name;
+        const msgToSend = "pong";
         
         sendSlackMessage(channel, msgToSend);
     }); //End app.post
@@ -27,31 +26,30 @@ function ping(app){
  *  @URL https://icanhazdadjoke.com/
 */
 function joke(app){
-    app.post('/joke', (req, res) => {
+    app.post('/joke', async (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /joke");
-        var channel = req.body.channel_name;
+        const channel = req.body.channel_name;
 
         const options = {
             url: 'https://icanhazdadjoke.com/',
-            headers: {'Accept': 'application/json'}
+            headers: {'Accept': 'application/json'},
+            resolveWithFullResponse: true
         };
 
-        // Query API and extract joke from JSON
-        request.get(options, function (error, response, body) {
-            const info = JSON.parse(body);
-            if (response.statusCode !== 200){
-                console.error("JOKE RECEIPT:", chalk.red(response.statusCode));
-                console.error("JOKE RECEIPT:", chalk.red(info.message));
+        await RequestGet(options).then(response => {
+            const info = JSON.parse(response);
+            let msgToSend = `${info.joke} :joy_cat:`;
 
-                var msgToSend = "Error contacting the joke API :crying_cat_face:";
+            if (info.status !== 200){
+                console.error("JOKE STATUS:", chalk.red(info.status));
+                msgToSend = "Error contacting the joke API :crying_cat_face:";
             }else {
-                console.log("JOKE RECEIPT:", chalk.green(response.statusCode));
-                var msgToSend = `${info.joke} :joy_cat:`;
+                console.log("JOKE RECEIPT:", chalk.green(info.status));
             }
 
             sendSlackMessage(channel, msgToSend);
-        }); //End request to joke API
+        });
     }); //End app.post
 }; //Close function
 
@@ -62,31 +60,33 @@ function joke(app){
  *  @URL https://quotes.rest/
 */
 function quote(app){
-    app.post('/quote', (req, res) => {
+    app.post('/quote', async (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /quote");
-        var channel = req.body.channel_name;
+        const channel = req.body.channel_name;
 
         const options = {
             url: 'https://quotes.rest/qod?language=en',
-            headers: {'Accept': 'application/json'}
+            headers: {'Accept': 'application/json'},
+            resolveWithFullResponse: true
         };
 
-        // Query a jokes API and sends response in slack message
-        request.get(options, function (error, response, body) {
-            const info = JSON.parse(body);
-            if (response.statusCode !== 200){
-                console.error("QUOTE RECEIPT:", chalk.red(response.statusCode));
-                console.error("QUOTE RECEIPT:", chalk.red(info.error.message));
+        let msgToSend = "";
 
-                var msgToSend = "Error contacting the quote API :crying_cat_face:";
-            }else {
-                console.log("QUOTE RECEIPT:", chalk.green(response.statusCode));
-                var msgToSend = `*"${info.contents.quotes[0].quote}"*\n-${info.contents.quotes[0].author}`;
+        await RequestGet(options).then(response => {
+            const info = JSON.parse(response);
+            if (debug === true) console.log(info);
+
+            if(typeof info.error !== 'undefined' && info.error){
+                console.error("QUOTE STATUS:", chalk.red(info.error.code));
+                msgToSend = "Error contacting the quotes API :crying_cat_face:";
+            }else{
+                console.log("QUOTE RECEIPT:", chalk.green(200));
+                msgToSend = `*"${info.contents.quotes[0].quote}"*\n-${info.contents.quotes[0].author}`;
             }
 
             sendSlackMessage(channel, msgToSend);
-        }); //End request to joke API
+        });
     }); //End app.post
 }; //Close function
 
@@ -99,24 +99,27 @@ function simpsons(app){
     app.post('/simpsons', (req, res) => {
         res.end(); //Send a 200 okay message to slack to avoid timeout error being displayed to the user
         console.log("\nCOMMAND: /simpsons");
-        var channel = req.body.channel_name;
+        const channel = req.body.channel_name;
 
         const options = {
             url: 'https://thesimpsonsquoteapi.glitch.me/quotes',
-            headers: {'Accept': 'application/json'}
+            headers: {'Accept': 'application/json'},
+            resolveWithFullResponse: true
         };
 
-        // Query a jokes API and sends response in slack message
+       let msgToSend = "";
+
         request.get(options, function (error, response, body) {
             const info = JSON.parse(body);
+
             if (body.includes("D'oh!")) {
                 console.error("SIMPSONS RECEIPT:", chalk.red(500));
                 console.error("SIMPSONS RECEIPT:", chalk.red("Internal Server Error"));
 
-                var msgToSend = "Error contacting The Simpsons quote API :crying_cat_face:";
-            }else {
+                msgToSend = "Error contacting The Simpsons quote API :crying_cat_face:";
+            }else{
                 console.log("SIMPSONS RECEIPT:", chalk.green(response.statusCode));
-                var msgToSend = `*"${info[0].quote}"*\n-${info[0].character}`;
+                msgToSend = `*"${info[0].quote}"*\n-${info[0].character}`;
             }
 
             sendSlackMessage(channel, msgToSend);
@@ -131,32 +134,29 @@ function simpsons(app){
  *  @URL https://api.funtranslations.com/translate/klingon.json
 */
 function klingon(app){
-    app.post('/klingon', (req, res) => {
+    app.post('/klingon', async (req, res) => {
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND: /klingon");
-        var channel = req.body.channel_name;
-        var msgToTranslate = req.body.text;
+        const channel = req.body.channel_name;
+
+        let msgToTranslate = "";
+        let msgToSend = "";
+
+        ( typeof req.body.text !== "undefined" && req.body.text ) ? msgToTranslate = req.body.text : msgToTranslate = "You didn't specify parameters :man-facepalming:"
 
         const options = {
             url: 'https://api.funtranslations.com/translate/klingon.json?text='+msgToTranslate,
             headers: {'Accept': 'application/json'}
         };
 
-        // Query a jokes API and sends response in slack message
-        request.get(options, function (error, response, body) {
-            const info = JSON.parse(body);
-            if (response.statusCode !== 200) {
-                console.error("KLINGON RECEIPT:", chalk.red(info.error.code));
-                console.error("KLINGON RECEIPT:", chalk.red(info.error.message));
-
-                var msgToSend = "Error contacting the klingon translations API :crying_cat_face:";
-            }else {
-                console.log("KLINGON RECEIPT:", chalk.green(response.statusCode));
-                var msgToSend = `*"${info.contents.translated}"*\n-Klingon translation of "${info.contents.text}"`;
-            }
+        await RequestGet(options).then(response => {
+            const info = JSON.parse(response);
+            (typeof info.error !== 'undefined' && info.error) ? msgToSend = "Error contacting the klingon API :crying_cat_face:" : msgToSend = `*"${info.contents.translated}"*\n-Klingon translation of "${info.contents.text}"`;
+            (info.error.code !== 200) ? console.error("QUOTE STATUS:", chalk.red(info.error.code)) : console.log("QUOTE RECEIPT:", chalk.green(info.error.code));
 
             sendSlackMessage(channel, msgToSend);
-        }); //End request to joke API
+
+        }); //End request to klingon API
     }); //End app.post
 }; //Close function
 
@@ -173,7 +173,7 @@ module.exports = {
 function sendSlackMessage(channel, msgToSend) {
 
     // Build slack requirements
-    var data = {
+    const data = {
         form: {
             token: process.env.SLACK_AUTH_TOKEN,
             channel: channel,
@@ -194,4 +194,16 @@ function sendSlackMessage(channel, msgToSend) {
             console.log("ERROR:", chalk.red(msg.error));
         }
     }); //End request to slack API
+};
+
+// Ping API with specified data
+async function RequestGet(options) {
+    return request(options).then(res => {
+        if(debug === true) console.log("Status:", res.statusCode);
+        return res.body;
+    }).catch(error => {
+        ( typeof error.error !== 'undefined' && error.error ) ? err = error.error : err = error;
+        if (debug === true) console.log(`Returning ${err}`);
+        return err;
+    });
 };

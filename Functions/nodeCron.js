@@ -6,8 +6,7 @@ const chalk = require('chalk');
 console.log("===NodeCron.js is Running===");
  
 cron.schedule('0 9 * * *', () => {
-  console.log("===Time trigger activated.===");
-  console.log("\nCOMMAND: /ping");
+  console.log("=== Sending good morning ===");
 
   // Query the cat API and set the body of the response as our slack message
   request('http://edgecats.net/random', function (error, response, body) {
