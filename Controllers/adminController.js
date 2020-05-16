@@ -16,9 +16,9 @@ function command(app){
         const name = "ping"
         res.end(); // Send 200 OK to avoid timeout error.
         console.log("\nCOMMAND:", `${name}`);
-        const channel = req.body.channel_name;
+        let channel = req.body.channel_name;
         let cmdToSearch = "";
-        let msgToSend = "There was a problem getting your command :crying_cat_face:";
+        let msgToSend = "";
 
         if(typeof req.body.text !== 'undefined' && req.body.text){
             cmdToSearch = req.body.text;
@@ -27,6 +27,25 @@ function command(app){
             await findCommand(cmdToSearch).then(function(description){
                 if (debug === true) console.log("FIND_COMMAND_RETURNED: ", description);
                 msgToSend = `*/${cmdToSearch}*\n${description[0].cmd_desc}`;
+            });
+        }else {
+            let command_msg = "";
+            user_channel = req.body.user_id;
+
+            await hailMary().then(function(commands){
+                count = 0
+                for(var cmd_name in commands){
+                    command_msg += `*/${commands[count]["cmd_name"]}*`
+                    command_msg += "\n"
+                    command_msg += commands[count]["cmd_desc"];
+                    command_msg += "\n\n"
+                    count++;
+                }
+
+                msgToSend = `<@${user_channel}> has been sent a list of commands!\nIf you'd like to see this too, just type */command* :smile_cat:`;
+
+                console.log("Sending to slack: ", command_msg);
+                sendSlackMessage(user_channel, command_msg);
             });
         }
 
@@ -100,6 +119,11 @@ async function findCommand(cmdToSearch) {
     const db = await loadDB();
     //var dbo = db.db("slackbot");
     return await db.collection("commands").find({"cmd_name":cmdToSearch}).toArray();
+}
+
+async function hailMary(){
+    const db = await loadDB();
+    return await db.collection("commands").find({}).toArray();
 }
 
 module.exports = {
