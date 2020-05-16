@@ -3,7 +3,12 @@
 const request = require("request-promise-native");
 const SpotifyWebApi = require('spotify-web-api-node');
 const chalk = require('chalk');
+
 const morning_gif = require('../model/data.json');
+const loadDB = require('../db');
+
+let Controller = require("./Controller");
+Controller = new Controller;
 const debug = false;
 
 // credentials are optional
@@ -19,8 +24,9 @@ const spotifyApi = new SpotifyWebApi({
  */
 function lolcats(app){
     app.post('/cat', (req, res) => {
+        const name = "lolcats"
         res.end(); // Send 200 OK to avoid timeout error.
-        console.log("\nCOMMAND: /cat");
+        Controller.info("\nCOMMAND:",  `/${name}`);
         const channel = req.body.channel_name;
 
         // Query cat API and construct message from response
@@ -57,24 +63,30 @@ function lolcats(app){
  *  @require ./data.json
  */
 function morning(app){
-    app.post('/morning', (req, res) => {
+    app.post('/morning', async (req, res) => {
+        const name = "morning"
         res.end(); // Send 200 OK to avoid timeout error.
-        console.log("\nCOMMAND: /morning");
+        Controller.info("\nCOMMAND:",  `/${name}`);
         const channel = req.body.channel_name;
 
         // Random number generator
-        const number = Math.floor(Math.random() * 26);
-        if (debug === true) console.log("NUMBER: ", number);
+        const number = Math.floor(Math.random() * 10);
+        console.log("NUMBER: ", number);
 
-        let greeting = "";
-        if (!req.body.text){
-            ( !morning_gif.greetings[number] ) ? greeting = "Good Morning!" : greeting = morning_gif.greetings[number];
-        }else{
-            const greeting = req.body.text;
-        }
+        // let greeting = "";
+        // if (!req.body.text){
+        //     ( !morning_gif.greetings[number] ) ? greeting = "Good Morning!" : greeting = morning_gif.greetings[number];
+        // }else{
+        //     const greeting = req.body.text;
+        // }
 
-        const msgToSend = `*${greeting}*\n${morning_gif.gifs[number]}`;
-        sendSlackMessage(channel, msgToSend);
+        await findGreetings(number).then(function(description){
+            console.log(typeof(description))
+            Controller.debug(description);
+        });
+
+        // const msgToSend = `*${greeting}*\n${morning_gif.gifs[number]}`;
+        // sendSlackMessage(channel, msgToSend);
 
     }); // End app.post
 }; // Close function
@@ -86,8 +98,9 @@ function morning(app){
  */
 function youtube(app){
     app.post('/youtube', async (req, res) => {
+        const name = "youtube"
         res.end(); // Send 200 OK to avoid timeout error.
-        console.log("\nCOMMAND: /youtube");
+        Controller.info("\nCOMMAND:",  `/${name}`);
         const channel = req.body.channel_name;
         const youtubeKey = process.env.YOUTUBE_KEY;
         let search = "";
@@ -126,8 +139,9 @@ function youtube(app){
  */
 function spotify(app){
     app.post('/spotify', async (req, res) => {
+        const name = "spotify"
         res.end(); // Send 200 OK to avoid timeout error.
-        console.log("\nCOMMAND: /spotify");
+        Controller.info("\nCOMMAND:",  `/${name}`);
         const channel = req.body.channel_name;
         let search = "";
 
@@ -170,14 +184,12 @@ function spotify(app){
         }); //End request to Spotify
 }; //Close function
 
-module.exports = {
-    lolcats,
-    morning,
-    youtube,
-    spotify
-};
-
-// Send constructed data to slack
+/** 
+ * Send constructed data to slack
+ * @require Environment variables
+ * @require STRING channel
+ * @require STRING msgToSend
+ */
 function sendSlackMessage(channel, msgToSend) {
 
     // Build slack requirements
@@ -204,7 +216,10 @@ function sendSlackMessage(channel, msgToSend) {
     }); //End request to slack API
 };
 
-// Ping API with specified data
+/**
+ * Ping API with specified data
+ * @require ARRAY options [method, URL, headers]
+ */
 async function RequestGet(options) {
     return request(options).then(res => {
         if(debug === true) console.log("Status:", res.statusCode);
@@ -214,4 +229,21 @@ async function RequestGet(options) {
         if (debug === true) console.log(`Returning ${err}`);
         return err;
     });
+};
+
+/** 
+ * Query the mongoDB database for a greeting
+ * @require INT gtn_id
+ */
+async function findGreetings(greeting_id) {
+    const db = await loadDB();
+    return await db.collection("greetings").find({"gtn_id":greeting_id}).toArray();
+}
+
+
+module.exports = {
+    lolcats,
+    morning,
+    youtube,
+    spotify
 };

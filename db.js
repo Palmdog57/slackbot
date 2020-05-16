@@ -11,7 +11,7 @@ const loadDB = async () => {
     try {
         const client = await MongoClient.connect(urlConstructor, { useUnifiedTopology: true });
         db = client.db('slackbot');
-        console.log("Success.");
+        console.log("---DB SUCCESS---");
     } catch (err) {
         console.log(err);
     }

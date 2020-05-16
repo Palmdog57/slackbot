@@ -13,8 +13,9 @@ const debug = true;
  */
 function command(app){
     app.post('/command', async (req, res) => {
+        const name = "ping"
         res.end(); // Send 200 OK to avoid timeout error.
-        console.log("\nCOMMAND: /command");
+        console.log("\nCOMMAND:", `${name}`);
         const channel = req.body.channel_name;
         let cmdToSearch = "";
         let msgToSend = "There was a problem getting your command :crying_cat_face:";
@@ -42,8 +43,9 @@ function command(app){
  */
 function uptime(app){
     app.post('/uptime', (req, res) => {
+        const name = "uptime";
         res.end(); // Send 200 OK to avoid timeout error.
-        console.log("\nCOMMAND: /uptime");
+        console.log("\nCOMMAND:", `${name}`);
         const channel = req.body.channel_name;
         const sec = process.uptime();
         const uptime = convertHMS(sec);
@@ -52,11 +54,6 @@ function uptime(app){
         sendSlackMessage(channel, msgToSend);
     }); //End app.post
 }; //Close function
-
-module.exports = {
-    command,
-    uptime
-};
 
 // Send constructed data to slack
 function sendSlackMessage(channel, msgToSend) {
@@ -104,3 +101,8 @@ async function findCommand(cmdToSearch) {
     //var dbo = db.db("slackbot");
     return await db.collection("commands").find({"cmd_name":cmdToSearch}).toArray();
 }
+
+module.exports = {
+    command,
+    uptime
+};
