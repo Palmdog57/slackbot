@@ -11,11 +11,11 @@ let Controller = require("./Controller");
 Controller = new Controller;
 const debug = false;
 
-// credentials are optional
-const spotifyApi = new SpotifyWebApi({
-    clientId: `${process.env.SPOTIFY_CLIENT_ID}`,
-    clientSecret: `${process.env.SPOTIFY_CLIENT_SECRET}`
-});
+// // credentials are optional
+// const spotifyApi = new SpotifyWebApi({
+//     clientId: `${process.env.SPOTIFY_CLIENT_ID}`,
+//     clientSecret: `${process.env.SPOTIFY_CLIENT_SECRET}`
+// });
 
 /** 
  *  Return a random cat GIF to the channel the message originated from
@@ -67,6 +67,7 @@ function morning(app){
         const name = "morning"
         res.end(); // Send 200 OK to avoid timeout error.
         Controller.info("\nCOMMAND:",  `/${name}`);
+        Controller.debug("REQUEST BODY: ", req.body);
         const channel = req.body.channel_name;
 
         // Random number generator
@@ -157,6 +158,7 @@ function spotify(app){
               'grant_type': 'client_credentials'
             }
           };
+          
           request(options, function (error, response) { 
               if (error) throw new Error(error);
               const res = JSON.parse(response.body);
